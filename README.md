@@ -335,9 +335,9 @@ vendor/gbajs/   stock GBA.js for the standalone link-port module (BSD-2-Clause)
 
 ## Legal
 
-GBScribe and AdvancePrint ? Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the [MIT License](LICENSE.md).
+GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the [GBScribe MIT License](https://github.com/KyberCritter/GBScribe/blob/master/LICENSE.md) and the [AdvancePrint MIT License](https://github.com/KyberCritter/AdvancePrint/blob/main/LICENSE.md).
 
-mGBA © 2013–2025 Jeffrey Pfau and contributors, licensed under the [Mozilla Public License 2.0](LICENSES/mgba-MPL-2.0.txt).
+mGBA © 2013–2025 Jeffrey Pfau and contributors, licensed under the [Mozilla Public License 2.0](https://github.com/mgba-emu/mgba/blob/master/LICENSE).
 
 Press Start 2P font, SIL Open Font License 1.1; see
 [`assets/fonts/OFL.txt`](assets/fonts/OFL.txt).

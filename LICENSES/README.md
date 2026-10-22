@@ -14,7 +14,7 @@ copyleft licenses.
 | Press Start 2P | Google Fonts, latin WOFF2 subset | SIL Open Font License 1.1 | [`press-start-2p-OFL-1.1.txt`](press-start-2p-OFL-1.1.txt) |
 | Hardware photos | Supplied by Scott Ratchford | Author's own photographs | [`../assets/img/README.md`](../assets/img/README.md) |
 
-mGBA is distributed under the Mozilla Public License 2.0. The vendored
+mGBA is distributed under the [Mozilla Public License 2.0](https://github.com/mgba-emu/mgba/blob/master/LICENSE). The vendored
 WebAssembly build keeps the upstream license at
 [`mgba-MPL-2.0.txt`](mgba-MPL-2.0.txt); the platform wrapper is part of the same
 source tree and carries the same notice.

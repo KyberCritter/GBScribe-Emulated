@@ -161,8 +161,11 @@ export function buildTemplate() {
         <li>Nothing is uploaded. The ROM and all processing stay in this page.</li>
       </ul>
       <div class="gbs-legal">
-        GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the MIT License.
-        Emulator core: mGBA © 2013–2025 Jeffrey Pfau and contributors, licensed under the Mozilla Public License 2.0.
+        GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software,
+        licensed under the <a href="https://github.com/KyberCritter/GBScribe/blob/master/LICENSE.md" target="_blank" rel="noopener">GBScribe MIT License</a>
+        and the <a href="https://github.com/KyberCritter/AdvancePrint/blob/main/LICENSE.md" target="_blank" rel="noopener">AdvancePrint MIT License</a>.
+        Emulator core: mGBA © 2013–2025 Jeffrey Pfau and contributors, licensed under the
+        <a href="https://github.com/mgba-emu/mgba/blob/master/LICENSE" target="_blank" rel="noopener">Mozilla Public License 2.0</a>.
         Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy Advance, and Game Boy Printer are trademarks of Nintendo.
       </div>
     </div>
