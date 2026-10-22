@@ -865,6 +865,83 @@ export function buildStyles() {
   .gbs-paper-visual { height: 90px; }
   .gbs-toast { position: fixed; top: auto; bottom: 12px; }
 }
+/* ------------------------------------------------------------ cookie policy */
+.gbs-cookie-dialog { width: min(590px, 92vw); }
+.gbs-cookie-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-bottom: 1px solid var(--gbs-line);
+  background:
+    radial-gradient(300px 150px at 8% 0%, #fff8e3, transparent 70%),
+    linear-gradient(#fffdf8, #f4ecdb);
+}
+.gbs-cookie-hero h3 { margin: 0; font-family: "GBS Pixel", ui-monospace, monospace; font-size: 13px; }
+.gbs-cookie-kicker {
+  margin: 0 0 3px;
+  color: var(--gbs-crimson);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.gbs-cookie-mark {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #ffe9ab 0 12%, #ecc66c 40%, #c69138 100%);
+  box-shadow: 0 2px 0 #fff9 inset, 0 6px 14px #7b4d1233;
+}
+.gbs-cookie-mark::before,
+.gbs-cookie-mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: #82551d;
+  box-shadow: 16px 7px 0 -1px #82551d, 8px 20px 0 -1px #82551d, 26px 22px 0 -2px #82551d;
+}
+.gbs-cookie-mark::before { left: 12px; top: 10px; width: 5px; height: 5px; }
+.gbs-cookie-mark::after { left: 18px; top: 24px; width: 4px; height: 4px; box-shadow: 14px -12px 0 -1px #82551d; }
+.gbs-cookie-list {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.gbs-cookie-list li {
+  position: relative;
+  padding-left: 20px;
+  color: var(--gbs-ink-soft);
+}
+.gbs-cookie-list li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: .58em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gbs-crimson);
+  box-shadow: 0 0 0 3px #a51f3f16;
+}
+.gbs-cookie-note {
+  padding: 10px 12px;
+  border: 1px dashed var(--gbs-line-strong);
+  border-radius: 9px;
+  background: #fffdf7;
+  font-size: 11.5px;
+}
+.gbs-cookie-state {
+  margin: 0 !important;
+  color: var(--gbs-ink-faint) !important;
+  font-size: 11px;
+}
+.gbs-cookie-state strong { color: var(--gbs-crimson); }
+
 /* ------------------------------------------------------------------ guide */
 .gbs-guide-intro { width: min(520px, 92vw); }
 .gbs-guide-intro .gbs-dialog-body p { margin: 0; }

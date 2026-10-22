@@ -56,8 +56,9 @@ Game Boy Camera print.
 - Unmodified GBScribe ROM built from the project's `master` branch.
 - 240x160 screen in a translucent crimson GBA shell, with clickable/touch
   D-pad, A/B, L/R, Start, and Select.
-- Keyboard controls, fully remappable and stored in `localStorage`.
-- GBA saves (GBScribe's FLASH1M save slots) persist in the browser.
+- Keyboard controls, fully remappable and saved locally with permission.
+- GBA saves (GBScribe's FLASH1M save slots) persist in the browser with
+  permission.
 - Guided **Try a test print** button.
 - A first-load guide that can walk through the whole app, plus a **Guide** button
   to replay it.
@@ -73,6 +74,21 @@ Game Boy Camera print.
   **Guide** button in the header can replay it at any time.
 - Embedders can suppress the first-load prompt with
   `guide-prompt="false"` or `?guide=0`.
+
+### Privacy and saved data
+- On the first visit, a dependency-free cookie and local-storage notice explains
+  what can be saved and offers **Accept** or **Reject**.
+- It states that **no data is sent to the server** and that **every feature works
+  without cookies**.
+- Accepting saves keyboard bindings, sound preference, printed pages and the
+  current paper strip, guide completion/skip state, and the GBScribe FLASH save
+  locally in the browser.
+- Rejecting clears local demo data and keeps the demo fully usable; it simply
+  starts fresh on the next visit.
+- The choice is remembered locally. **Privacy settings** in the **How it works**
+  dialog reopens the policy so it can be changed later.
+- The browser's local storage is used rather than tracking cookies, so saved
+  data is not attached to HTTP requests.
 
 ### Game Boy Printer
 - Serial-level GPIO emulation: SCK rising edges, SOUT/SI, pull-ups.
@@ -231,6 +247,7 @@ cp GBScribe.gba ../../assets/roms/GBScribe.gba
 | Paper | `src/printer/paper.js` | 281-dot sheets with centered 160-dot print, renderer, tear model |
 | Export | `src/export/exporters.js` | BMP, PDF, PNG, print |
 | UI | `src/app.js`, `src/ui/` | Shadow DOM component, GBA/printer shells |
+| Persistence | `src/persistence.js` | Consent-gated local storage for controls, pages, guide state, and saves |
 | Tests | `tests/` | Node unit tests + Playwright e2e |
 
 The printer's DATA buffer is the real 2bpp tile format: 20 tiles per row, 16
@@ -248,10 +265,10 @@ npm run test:all
 The Playwright suite boots GBScribe, detects the printer, exercises the text
 editor, drawing tools, saves, settings, credits, legal page, instructions,
 Konami Easter egg, QR print, drawing print, paper tearing, roll replacement,
-power cycling, exports, rebinding, the guided tour, and the reusable GPIO/byte
-link layers.
+power cycling, exports, rebinding, the guided tour, consent-gated persistence,
+and the reusable GPIO/byte link layers.
 
-The e2e suite has 21 tests; the Node suite has 18. The e2e tests read
+The e2e suite has 26 tests; the Node suite has 22. The e2e tests read
 GBScribe's real BG text map and FLASH save data through the emulator, so
 assertions cover actual ROM state rather than DOM mocks.
 
@@ -262,6 +279,7 @@ assets/         ROM, font, logo
 docs/           integration, link-port reuse, testing notes
 src/
   app.js        demo orchestration
+  persistence.js  consent-gated local browser storage
   gbscribe-demo.js  custom element entry point
   linkport/     reusable GBA.js GPIO shim + byte adapter
   printer/      Game Boy Printer + paper model
@@ -282,7 +300,11 @@ vendor/gbajs/   stock GBA.js (BSD-2-Clause)
   A real roll is longer.
 - Print density/exposure is parsed but the visible burn is currently fixed.
 - Audio starts only after a user gesture, per browser policy.
-- Saves are browser-local; clearing site data removes them.
+- Saves are browser-local; clearing site data removes them. Printed pages share
+  the browser's local-storage quota, so very large page histories can hit the
+  quota and show a warning.
+- Rejecting storage removes the demo's local data and keeps every feature
+  available for the current visit, but nothing is restored next time.
 
 ## Legal
 

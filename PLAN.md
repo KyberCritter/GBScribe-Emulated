@@ -32,8 +32,9 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | Paper output, tear, scissors, pages | Done |
 | PNG / BMP / PDF / print | Done |
 | Reusable link-port package | Done (`src/linkport/`) |
-| Node unit tests | Done (18) |
-| Playwright feature tests | Done (21) |
+| Local persistence and cookie policy | Done, consent-gated |
+| Node unit tests | Done (22) |
+| Playwright feature tests | Done (26) |
 | Blog embedding docs | Done |
 
 ## Requirements trace
@@ -53,6 +54,8 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | MIT if deps allow | MIT; GBA.js BSD-2; font OFL; no GPL |
 | Document work/references | README, PLAN, docs, LICENSES |
 | Guided tutorial | First-load Yes/No prompt; spotlight/labels/arrows; auto-advances Start, mode select, typing, print, tear, and export after each user input; End tutorial and Guide replay controls |
+| Cookie / storage policy | First-load template with Accept/Reject; states that no data is sent to the server and every feature works without cookies; Privacy settings can reopen it |
+| Local save data | With consent, saves controls, sound, printed pages/current paper, guide completed/skipped state, and the GBScribe FLASH save in local browser storage; rejection clears demo data and disables writes |
 
 ## Emulator and license choice
 
@@ -224,6 +227,11 @@ Implementation notes:
 - Printer via ByteLinkAdapter
 - First-load guide prompt, eight-step auto-driven walkthrough, print/tear/export
   result, and ending the tutorial early
+- Guide completion/skip remembered across reloads
+- First-load cookie policy, accept/reject, rejected writes, and accepted
+  restoration of printed pages, current paper, controls, and the GBScribe save
+  file
+- `LocalStore` consent, JSON round-trip, rejection, and clearing behavior
 
 The tests read the ROM's BG text map and FLASH save data through the emulator,
 not DOM mocks.
@@ -236,6 +244,10 @@ not DOM mocks.
 - The printer model covers GBScribe's use of the protocol plus multi-copy and
   RLE, but is not a full hardware reimplementation of analog behavior.
 - Paper is a 4,000-dot demo roll (~95 cm) to make replacement reachable.
+- Persistence uses the browser's local-storage quota; very large page histories
+  can hit it, in which case a warning is shown and the session continues.
+- The consent choice is stored in local storage, not a tracking cookie, so it is
+  never attached to an HTTP request.
 - Print exposure is parsed but the visible burn is fixed.
 - Browser audio needs a user gesture.
 - Saves are browser-local.

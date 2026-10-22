@@ -40,6 +40,16 @@ types for `.gba`, `.woff2`, and ES modules.
 - multi-page PDF, 281-dot 2-bit image streams, physical page width
 - empty export rejection
 
+`tests/persistence.test.js`
+
+- consent accepted/rejected decisions
+- JSON reads and writes only when accepted
+- rejection clearing demo keys and `com.endrift.gbajs.*` saves while keeping
+  the consent choice
+
+`tests/paper.test.js` also round-trips detached pages and the current sheet
+through the persistence format.
+
 ## Playwright coverage
 
 `tests/e2e/core.spec.js`
@@ -68,6 +78,15 @@ types for `.gba`, `.woff2`, and ES modules.
 - Resume and Drawing mode routing
 - mobile layout: stacking, no overflow, image loading, on-screen Start
 
+`tests/e2e/cookies.spec.js`
+
+- first-load cookie and local-storage policy, including the no-server and
+  every-feature-works-without-cookies statements
+- accept restores printed pages and the current paper strip after reload
+- reject keeps the demo working but writes no pages, bindings, or emulator save
+- accepted remapped controls persist across reload
+- accepted GBScribe FLASH save persists and loads from the title screen
+
 `tests/e2e/guide.spec.js`
 
 - first-load **Would you like to view a guide?** prompt and Yes/No choice
@@ -78,6 +97,7 @@ types for `.gba`, `.woff2`, and ES modules.
 - the tutorial prints and tears a real sheet, then leaves the export controls
   enabled
 - **End tutorial** stops the overlay and leaves the demo usable
+- completed and skipped guide states suppress the prompt after reload
 
 `tests/e2e/linkport.spec.js`
 

@@ -168,6 +168,8 @@ export function buildTemplate() {
       </div>
     </div>
     <div class="gbs-dialog-footer">
+      <button class="gbs-btn is-quiet" data-action="privacy" type="button">Privacy settings</button>
+      <span class="gbs-spacer"></span>
       <button class="gbs-btn is-primary" data-action="demo" type="button">${icons.sparkle}<span>Run the test print</span></button>
       <button class="gbs-btn" data-close type="button">Close</button>
     </div>
@@ -242,6 +244,35 @@ export function buildTemplate() {
       <button class="gbs-btn" data-guide-no type="button">No thanks</button>
       <span class="gbs-spacer"></span>
       <button class="gbs-btn is-primary" data-guide-yes type="button">${icons.sparkle}<span>Yes, show me</span></button>
+    </div>
+  </dialog>
+
+  <dialog class="gbs-dialog gbs-cookie-dialog" data-dialog="cookie-policy" aria-labelledby="gbs-cookie-title">
+    <div class="gbs-cookie-hero">
+      <span class="gbs-cookie-mark" aria-hidden="true"></span>
+      <div>
+        <p class="gbs-cookie-kicker">Your privacy</p>
+        <h3 id="gbs-cookie-title">Cookies &amp; saved data</h3>
+      </div>
+    </div>
+    <div class="gbs-dialog-body">
+      <p>This demo can save a few things in this browser so your setup is waiting when you come back. It is just a way to keep your controls and save data.</p>
+      <ul class="gbs-cookie-list">
+        <li>Your keyboard and on-screen control settings</li>
+        <li>Your sound preference</li>
+        <li>Printed pages and the paper still in the printer</li>
+        <li>Whether you finished or skipped the guide</li>
+        <li>Your GBScribe save file</li>
+      </ul>
+      <p><strong>No data is sent to the server.</strong> Everything stays on your device.</p>
+      <p><strong>Every feature works without cookies.</strong> If you reject, the demo runs normally and starts fresh each visit.</p>
+      <p class="gbs-cookie-note">This uses local browser storage rather than tracking cookies. Your Accept or Reject choice is stored locally so this question does not appear again.</p>
+      <p class="gbs-cookie-state" data-cookie-state hidden></p>
+    </div>
+    <div class="gbs-dialog-footer">
+      <button class="gbs-btn" data-cookie-reject type="button">Reject</button>
+      <span class="gbs-spacer"></span>
+      <button class="gbs-btn is-primary" data-cookie-accept type="button">Accept</button>
     </div>
   </dialog>
 

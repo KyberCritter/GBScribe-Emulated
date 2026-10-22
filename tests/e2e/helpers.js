@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { CONSENT_KEY } from '../../src/persistence.js';
 
 /** Lowercase keyboard layer, matching src/ui/keyboard.c. */
 const LOWER = [
@@ -147,10 +148,7 @@ function pathTo(keys, start, target) {
   throw new Error(`No keyboard path from ${start} to ${target}`);
 }
 
-export async function boot(page, path = '/', powerOn = true) {
-  const target = /[?&]guide=/.test(path) ? path : `${path}${path.includes('?') ? '&' : '?'}guide=0`;
-  await page.goto(target);
-  await page.waitForFunction(() => window.__gbsDemo?.loaded === true, null, { timeout: 30_000 });
+export async function installTestHooks(page) {
   await page.evaluate(() => {
     const readText = () => {
       const gba = window.__gbsDemo.gba;
@@ -244,6 +242,20 @@ export async function boot(page, path = '/', powerOn = true) {
       resetBindings: () => localStorage.removeItem('gbscribe-emulated.bindings.v1'),
     };
   });
+}
+
+export async function boot(page, path = '/', powerOn = true) {
+  const target = /[?&]guide=/.test(path) ? path : `${path}${path.includes('?') ? '&' : '?'}guide=0`;
+  const cookieMode = target.match(/[?&]cookies=(missing|reject|accept)/)?.[1] || 'accept';
+  if (cookieMode !== 'missing') {
+    await page.addInitScript(
+      ({ key, value }) => localStorage.setItem(key, value),
+      { key: CONSENT_KEY, value: cookieMode === 'reject' ? 'rejected' : 'accepted' },
+    );
+  }
+  await page.goto(target);
+  await page.waitForFunction(() => window.__gbsDemo?.loaded === true, null, { timeout: 30_000 });
+  await installTestHooks(page);
   if (powerOn) {
     await page.evaluate(() => {
       const demo = window.__gbsDemo;

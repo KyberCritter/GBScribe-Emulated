@@ -22,6 +22,13 @@ import { buildStyles } from './ui/styles.js';
 import { icons } from './ui/icons.js';
 import { SoundBoard } from './ui/sound.js';
 import { installGbaLinkPort } from './linkport/gba-linkport.js';
+import {
+  LocalStore,
+  BINDINGS_KEY,
+  SOUND_KEY,
+  GUIDE_KEY,
+  PAGES_KEY,
+} from './persistence.js';
 
 const BUTTON_INDEX = {
   A: 0,
@@ -49,8 +56,6 @@ const DEFAULT_BINDINGS = {
   SELECT: 'Backspace',
 };
 
-const BINDINGS_KEY = 'gbscribe-emulated.bindings.v1';
-const SOUND_KEY = 'gbscribe-emulated.sound.v1';
 const MM_PER_DOT = 38 / 160;
 const VENDOR_SCRIPTS = [
   'util.js',
@@ -150,25 +155,6 @@ function formatKey(code) {
   return named[code] || code.replace(/^Numpad/, 'Num ').replace(/^Key/, '');
 }
 
-function loadLocal(key, fallback) {
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
-  }
-}
-
-function saveLocal(key, value) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export function mountDemo(host, options = {}) {
   const shadow = host.shadowRoot || host.attachShadow({ mode: 'open' });
   const fontUrl = options.fontUrl || new URL('../assets/fonts/PressStart2P-Regular.woff2', import.meta.url).href;
@@ -219,12 +205,17 @@ class GBScribeDemo {
     this.guideIndex = -1;
     this.guideTargetSpecs = [];
     this.guidePromptShown = false;
+    this.guideStatus = null;
+    this.store = new LocalStore();
+    this.privacyDecided = this.store.decided;
+    this.sessionStarted = false;
+    this.storageWarningShown = false;
     this.refs.gbaImage.src =
       options.gbaImageUrl || new URL('../assets/img/gba.webp', import.meta.url).href;
     this.refs.printerImage.src =
       options.printerImageUrl || new URL('../assets/img/printer.webp', import.meta.url).href;
-    this.bindings = { ...DEFAULT_BINDINGS, ...loadLocal(BINDINGS_KEY, {}) };
-    this.muted = loadLocal(SOUND_KEY, false);
+    this.bindings = { ...DEFAULT_BINDINGS };
+    this.muted = false;
     this.sound = new SoundBoard({ muted: this.muted });
     this.paperStore = new PaperStore({ onChange: (type, sheet, store) => this.onPaperChange(type, sheet, store) });
     this.paperView = new PaperCanvasView(this.refs.paperCanvas, { scale: 2 });
@@ -292,6 +283,11 @@ class GBScribeDemo {
       guideIntro: q('[data-dialog="guide-intro"]'),
       guideYes: q('[data-guide-yes]'),
       guideNo: q('[data-guide-no]'),
+      cookieDialog: q('[data-dialog="cookie-policy"]'),
+      cookieAccept: q('[data-cookie-accept]'),
+      cookieReject: q('[data-cookie-reject]'),
+      cookieState: q('[data-cookie-state]'),
+      privacyButtons: qa('[data-action="privacy"]'),
       bindings: q('[data-bindings]'),
       dialogs: {
         help: q('[data-dialog="help"]'),
@@ -315,6 +311,18 @@ class GBScribeDemo {
 
   init() {
     this.showLoading('Loading GBScribe…');
+    if (!this.store.decided) {
+      this.showCookiePolicy();
+      return;
+    }
+    this.beginSession();
+  }
+
+  beginSession() {
+    if (this.sessionStarted) return;
+    this.sessionStarted = true;
+    this.privacyDecided = true;
+    this.applySavedState();
     this.boot().catch((error) => {
       console.error(error);
       this.loaded = false;
@@ -322,6 +330,25 @@ class GBScribeDemo {
       this.toast('The emulator could not start. See the message on the GBA screen.', true);
       this.updateUI();
     });
+  }
+
+  applySavedState() {
+    if (!this.store.accepted) {
+      this.updateMuteUi();
+      this.renderBindings();
+      return;
+    }
+    const savedBindings = this.store.read(BINDINGS_KEY, {});
+    if (savedBindings && typeof savedBindings === 'object' && !Array.isArray(savedBindings)) {
+      this.bindings = { ...DEFAULT_BINDINGS, ...savedBindings };
+    }
+    this.muted = Boolean(this.store.read(SOUND_KEY, false));
+    this.guideStatus = this.normalizeGuideStatus(this.store.read(GUIDE_KEY, null));
+    const savedPages = this.store.read(PAGES_KEY, null);
+    if (savedPages) this.paperStore.restore(savedPages);
+    this.sound.setMuted(this.muted);
+    this.updateMuteUi();
+    this.renderBindings();
   }
 
   async boot() {
@@ -350,6 +377,12 @@ class GBScribeDemo {
     gba.setLogger((level, message) => {
       if (level <= gba.LOG_WARN) console.warn('[GBScribe]', message);
     });
+    const retrieveSavedata = gba.retrieveSavedata.bind(gba);
+    gba.retrieveSavedata = () => (this.store.accepted ? retrieveSavedata() : false);
+    const storeSavedata = gba.storeSavedata.bind(gba);
+    gba.storeSavedata = () => {
+      if (this.store.accepted) storeSavedata();
+    };
     gba.setCanvasDirect(this.refs.screen);
     gba.setBios(bios);
     if (!gba.setRom(rom)) throw new Error('The GBScribe ROM could not be loaded');
@@ -469,8 +502,19 @@ class GBScribeDemo {
     }, { signal });
     this.refs.guideNo?.addEventListener('click', () => {
       this.refs.guideIntro.close();
+      this.markGuideStatus('skipped');
       this.toast('You can start the guide anytime from the Guide button.');
     }, { signal });
+    for (const button of this.refs.privacyButtons) {
+      button.addEventListener('click', () => this.openPrivacySettings(), { signal });
+    }
+    this.refs.cookieAccept?.addEventListener('click', () => this.chooseStorage('accepted'), { signal });
+    this.refs.cookieReject?.addEventListener('click', () => this.chooseStorage('rejected'), { signal });
+    this.refs.cookieDialog?.addEventListener('cancel', (event) => event.preventDefault(), { signal });
+    this.refs.cookieDialog?.addEventListener('close', () => {
+      if (this.openDialogElement === this.refs.cookieDialog) this.openDialogElement = null;
+    }, { signal });
+    window.addEventListener('pagehide', () => this.persistPages(), { signal });
     this.refs.guideIntro?.addEventListener('click', (event) => {
       if (event.target === this.refs.guideIntro) this.refs.guideIntro.close();
     }, { signal });
@@ -617,7 +661,7 @@ class GBScribeDemo {
     }
     $('[data-reset-bindings]')?.addEventListener('click', () => {
       this.bindings = { ...DEFAULT_BINDINGS };
-      saveLocal(BINDINGS_KEY, this.bindings);
+      this.store.write(BINDINGS_KEY, this.bindings);
       this.renderBindings();
       this.toast('Controls reset to defaults.');
     }, { signal });
@@ -749,7 +793,7 @@ class GBScribeDemo {
         return;
       }
       this.bindings[this.listeningAction] = event.code;
-      saveLocal(BINDINGS_KEY, this.bindings);
+      this.store.write(BINDINGS_KEY, this.bindings);
       const action = this.listeningAction;
       this.listeningAction = null;
       this.renderBindings();
@@ -829,10 +873,61 @@ class GBScribeDemo {
     this.scheduleUI();
   }
 
+  /* ------------------------------------------------------------- privacy */
+
+  showCookiePolicy(fromSettings = false) {
+    if (!this.refs.cookieDialog || this.refs.cookieDialog.open) return;
+    if (fromSettings && this.guideActive) return;
+    this.closeDialogs();
+    const decision = this.store.decision;
+    this.refs.cookieState.hidden = !decision;
+    this.refs.cookieState.textContent = decision
+      ? `Current choice: ${decision === 'accepted' ? 'Accepted' : 'Rejected'}`
+      : '';
+    this.openDialogElement = this.refs.cookieDialog;
+    this.refs.cookieDialog.showModal();
+  }
+
+  openPrivacySettings() {
+    this.showCookiePolicy(true);
+  }
+
+  chooseStorage(decision) {
+    const previous = this.store.decision;
+    this.store.setDecision(decision);
+    if (decision === 'rejected') {
+      this.store.clearSavedData();
+    } else if (this.sessionStarted) {
+      this.store.write(BINDINGS_KEY, this.bindings);
+      this.store.write(SOUND_KEY, this.muted);
+      if (this.guideStatus) this.store.write(GUIDE_KEY, this.guideStatus);
+      this.persistPages();
+    }
+    this.refs.cookieDialog.close();
+    this.privacyDecided = true;
+    if (!this.sessionStarted) {
+      this.beginSession();
+    } else if (decision !== previous) {
+      window.location.reload();
+    }
+  }
+
   /* --------------------------------------------------------------- guide */
+
+  normalizeGuideStatus(value) {
+    return value === 'completed' || value === 'skipped' ? value : null;
+  }
+
+  markGuideStatus(status) {
+    if (status !== 'completed' && status !== 'skipped') return;
+    if (status === 'skipped' && this.guideStatus === 'completed') return;
+    this.guideStatus = status;
+    this.store.write(GUIDE_KEY, status);
+  }
 
   shouldShowGuidePrompt() {
     if (this.options.guidePrompt === false) return false;
+    if (!this.privacyDecided || this.guideStatus) return false;
     try {
       return new URLSearchParams(window.location.search).get('guide') !== '0';
     } catch {
@@ -1180,11 +1275,13 @@ class GBScribeDemo {
 
   finishGuide() {
     this.stopGuide(false);
+    this.markGuideStatus('completed');
     this.toast('Guide complete. The Guide button can replay it anytime.', false, 4200);
   }
 
   stopGuide(endedByUser) {
     if (!this.guideActive) return;
+    if (endedByUser) this.markGuideStatus('skipped');
     this.guideActive = false;
     this.guideReady = false;
     this.guideRunId++;
@@ -1209,7 +1306,7 @@ class GBScribeDemo {
 
   toggleMute() {
     this.muted = !this.muted;
-    saveLocal(SOUND_KEY, this.muted);
+    this.store.write(SOUND_KEY, this.muted);
     this.sound.setMuted(this.muted);
     if (this.gba && this.gba.audio) {
       this.gba.audio.masterVolume = this.muted ? 0 : 0.55;
@@ -1296,6 +1393,9 @@ class GBScribeDemo {
   onPaperChange(type, sheet) {
     if (type === 'tear' || type === 'remove' || type === 'clear') {
       this.renderPages();
+    }
+    if (type === 'tear' || type === 'remove' || type === 'clear' || type === 'end') {
+      this.persistPages();
     }
     if (!sheet) {
       // Non-row notifications (end/remove/clear) must not collapse the strip.
@@ -1408,6 +1508,15 @@ class GBScribeDemo {
   }
 
   /* ---------------------------------------------------------------- pages */
+
+  persistPages() {
+    if (!this.store.accepted) return;
+    const saved = this.store.write(PAGES_KEY, this.paperStore.toJSON());
+    if (!saved && !this.storageWarningShown) {
+      this.storageWarningShown = true;
+      this.toast('The browser could not save the printed pages. They are still available this session.', true, 5000);
+    }
+  }
 
   renderPages() {
     const detached = this.paperStore.detached;
