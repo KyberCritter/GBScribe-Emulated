@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { GUIDE_KEY } from '../../src/persistence.js';
 import { boot } from './helpers.js';
 
 const STEPS = [
@@ -42,6 +43,27 @@ test('guided tutorial walks through starting, writing, printing, tearing, and ex
   await expect(page.locator('gbscribe-emulator [data-pages]')).toBeVisible();
   await expect(page.locator('gbscribe-emulator .gbs-page-card')).toHaveCount(1);
   await expect(page.locator('gbscribe-emulator [data-export="png"]')).toBeEnabled();
+  expect(await page.evaluate((key) => localStorage.getItem(key), GUIDE_KEY)).toBe('"completed"');
+
+  await page.reload();
+  await page.waitForFunction(() => window.__gbsDemo?.loaded === true, null, { timeout: 30_000 });
+  await page.waitForTimeout(1400);
+  await expect(guide).toBeHidden();
+  expect(await page.evaluate(() => window.__gbsDemo.guideStatus)).toBe('completed');
+});
+
+test('skipping the guide is remembered', async ({ page }) => {
+  await boot(page, '/?guide=1');
+  const prompt = page.locator('gbscribe-emulator [data-dialog="guide-intro"]');
+  await expect(prompt).toBeVisible();
+  await page.locator('gbscribe-emulator [data-guide-no]').click();
+  expect(await page.evaluate((key) => localStorage.getItem(key), GUIDE_KEY)).toBe('"skipped"');
+
+  await page.reload();
+  await page.waitForFunction(() => window.__gbsDemo?.loaded === true, null, { timeout: 30_000 });
+  await page.waitForTimeout(1400);
+  await expect(prompt).toBeHidden();
+  expect(await page.evaluate(() => window.__gbsDemo.guideStatus)).toBe('skipped');
 });
 
 test('declining the guide leaves the demo ready to use', async ({ page }) => {

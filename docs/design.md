@@ -62,6 +62,39 @@ top port and printer right port. It leaves the GBA upward, arcs over the gap,
 and enters the printer on its right side. At widths below 1040 px the cable is
 replaced by a compact “Link Cable” chip between the stacked devices.
 
+## Local persistence and consent
+
+The first visit opens a dependency-free consent card adapted from the common
+cookie-banner pattern. It lists exactly what can be saved: control bindings,
+sound preference, printed pages and the current paper strip, guide
+completed/skipped state, and the GBScribe FLASH save. It states that no data is
+sent to the server and that every feature works without cookies. **Accept** and
+**Reject** are both available, and the **Privacy settings** button in **How it
+works** reopens the card.
+
+The implementation uses `localStorage`, not tracking cookies, because local
+storage is not attached to HTTP requests and has enough room for the printed
+dot rows. Storage is gated by `src/persistence.js`:
+
+```txt
+gbscribe-emulated.consent.v1     accepted | rejected
+gbscribe-emulated.bindings.v1    remapped keyboard controls
+gbscribe-emulated.sound.v1       mute preference
+gbscribe-emulated.guide.v1       completed | skipped
+gbscribe-emulated.pages.v1       detached sheets + current sheet
+com.endrift.gbajs.*              stock GBA.js FLASH save
+```
+
+The emulator's `storeSavedata` and `retrieveSavedata` methods are wrapped per
+instance. They delegate to GBA.js only after consent, so rejecting storage
+leaves GBScribe saves fully functional in memory but does not persist them.
+Rejecting also clears the demo keys and any `com.endrift.gbajs.*` saves.
+
+Paper pages are serialized as JSON with one base64 string per 281-dot row and
+`null` for a blank feed row. Restoring a sheet creates fresh sheet IDs and
+replays the paper view so the gallery and current strip look exactly as they
+did before the reload. Quota failures show a toast and keep the session alive.
+
 ## Guided tour
 
 The guide is a fixed overlay inside the component's Shadow DOM. It dims the

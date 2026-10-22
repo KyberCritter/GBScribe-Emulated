@@ -42,6 +42,21 @@ export const GRAY_SHADES = [
 
 let nextSheetId = 1;
 
+function encodeBase64(bytes) {
+  let binary = '';
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  return btoa(binary);
+}
+
+function decodeBase64(text) {
+  const binary = atob(text);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+  return bytes;
+}
+
 export class PaperSheet {
   constructor(meta = {}) {
     this.id = `sheet-${nextSheetId++}`;
@@ -77,6 +92,37 @@ export class PaperSheet {
   truncate(count) {
     if (count < 0) count = 0;
     this.rows.length = Math.min(this.rows.length, count);
+  }
+
+  toJSON() {
+    return {
+      label: this.label,
+      createdAt: this.createdAt,
+      rows: this.rows.map((row) => (row ? encodeBase64(row) : null)),
+    };
+  }
+
+  static fromJSON(data) {
+    if (!data || !Array.isArray(data.rows)) return null;
+    const sheet = new PaperSheet({
+      label: typeof data.label === 'string' ? data.label : '',
+      createdAt: Number.isFinite(data.createdAt) ? data.createdAt : Date.now(),
+    });
+    for (const row of data.rows) {
+      if (row === null) {
+        sheet.rows.push(null);
+        continue;
+      }
+      if (typeof row !== 'string') continue;
+      try {
+        const bytes = decodeBase64(row);
+        if (bytes.length !== PAPER_WIDTH) continue;
+        sheet.rows.push(bytes);
+      } catch {
+        // Ignore a corrupt row and keep the rest of the sheet usable.
+      }
+    }
+    return sheet;
   }
 }
 
@@ -158,6 +204,32 @@ export class PaperStore {
 
   get hasPaper() {
     return Boolean(this.current && !this.current.isEmpty);
+  }
+
+  toJSON() {
+    return {
+      version: 1,
+      sheetNumber: this.sheetNumber,
+      totalSheets: this.totalSheets,
+      current: this.current && !this.current.isEmpty ? this.current.toJSON() : null,
+      detached: this.detached.map((sheet) => sheet.toJSON()),
+    };
+  }
+
+  restore(data) {
+    if (!data || data.version !== 1 || !Array.isArray(data.detached)) return false;
+    this.detached = data.detached.map((sheet) => PaperSheet.fromJSON(sheet)).filter(Boolean);
+    this.sheetNumber = Number.isFinite(data.sheetNumber)
+      ? Math.max(1, Math.floor(data.sheetNumber))
+      : this.detached.length + 1;
+    this.totalSheets = Number.isFinite(data.totalSheets)
+      ? Math.max(0, Math.floor(data.totalSheets))
+      : this.detached.length;
+    this.current =
+      PaperSheet.fromJSON(data.current) ||
+      new PaperSheet({ label: `Print ${this.sheetNumber}` });
+    this.notify('restore', this.current.isEmpty ? null : this.current);
+    return true;
   }
 
   notify(type, sheet) {

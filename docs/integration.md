@@ -72,6 +72,21 @@ Create `_includes/gbscribe-demo.html`:
 
 and put `{% include gbscribe-demo.html %}` in the post.
 
+## Local saved data and consent
+
+On first load the demo asks whether it may save data locally. Nothing is sent
+to a server. With **Accept**, the demo keeps control bindings, sound preference,
+printed pages, guide progress, and the GBScribe FLASH save in the browser's
+`localStorage`. With **Reject**, those writes are disabled and existing demo
+keys are cleared. The choice itself is remembered locally so the policy does not
+reappear on every visit.
+
+Because storage is origin-scoped, the demo must be served from the same origin
+and path as the page that should restore it. To reset a visitor's choice, use
+the **Privacy settings** button in **How it works**, or clear the site's local
+storage in the browser. The test helper uses `?cookies=missing` to exercise the
+first-load notice and `?cookies=reject` for the rejected path.
+
 ## Content Security Policy
 
 The demo needs:

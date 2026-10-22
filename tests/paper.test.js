@@ -53,6 +53,24 @@ test('PaperStore keeps detached pages in order and can remove one', () => {
   assert.deepEqual(store.detached.map((sheet) => sheet.id), [second.id]);
 });
 
+test('PaperStore round-trips detached pages and the current sheet', () => {
+  const store = new PaperStore();
+  for (let i = 0; i < 4; i++) store.appendRow(new Uint8Array(160).fill(1));
+  store.appendBlank();
+  const torn = store.tear();
+  for (let i = 0; i < 2; i++) store.appendRow(new Uint8Array(160).fill(3));
+
+  const restored = new PaperStore();
+  assert.equal(restored.restore(JSON.parse(JSON.stringify(store.toJSON()))), true);
+  assert.equal(restored.detached.length, 1);
+  assert.equal(restored.detached[0].label, torn.label);
+  assert.equal(restored.detached[0].rowCount, 5);
+  assert.equal(restored.detached[0].rows[0][PRINT_OFFSET], 1);
+  assert.equal(restored.detached[0].rows[4], null);
+  assert.equal(restored.current.rowCount, 2);
+  assert.equal(restored.current.rows[0][PRINT_OFFSET], 3);
+});
+
 test('renderSheetRgba scales each dot and uses the paper palette', () => {
   const sheet = sheetWithRows(2, 3);
   const image = renderSheetRgba(sheet, 2);
