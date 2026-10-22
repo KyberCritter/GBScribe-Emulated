@@ -52,6 +52,7 @@ export async function createGbaEmulator(options) {
     autoSaveStateEnable: false,
     restoreAutoSaveStateOnLoad: false,
     allowOpposingDirections: false,
+    rewindEnable: false,
   });
   await module.FSInit();
 
