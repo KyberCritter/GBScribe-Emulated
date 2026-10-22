@@ -38,6 +38,7 @@ function snapshot() {
     paperPercent: device.paperPercent,
     jobProgress: device.jobProgress,
     jobRowsLeft: device.jobRowsLeft,
+    printJob: Boolean(device.printJob),
   };
 }
 

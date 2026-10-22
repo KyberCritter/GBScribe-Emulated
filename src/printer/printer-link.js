@@ -36,6 +36,7 @@ export class PrinterLink {
     this.coverClosed = true;
     this.jobProgress = 0;
     this.jobRowsLeft = 0;
+    this.printJob = null;
 
     this.commandBuffer = new SharedArrayBuffer(16);
     this.commands = new Int32Array(this.commandBuffer);
@@ -91,6 +92,7 @@ export class PrinterLink {
     this.lowPaperRows = state.lowPaperRows;
     this.jobProgress = state.jobProgress;
     this.jobRowsLeft = state.jobRowsLeft;
+    this.printJob = state.printJob ? { active: true } : null;
   }
 
   setPower(on) {
