@@ -119,11 +119,10 @@ Game Boy Camera print.
 - Everything is generated locally; no uploads or services.
 
 ### Reusable link-port layer
-The emulator adapter and printer model are standalone modules, documented in
-[`docs/linkport.md`](docs/linkport.md). They can be reused in another emulator
-project — for example, a GB Camera / GB/GBC emulator using the
-`ByteLinkAdapter`, or a different GBA front end using
-`installGbaLinkPort()`.
+The emulator adapter, printer worker, and printer model are standalone modules,
+documented in [`docs/linkport.md`](docs/linkport.md). They can be reused in
+another emulator project — for example, a GB Camera / GB/GBC emulator using the
+`ByteLinkAdapter`, or a GBA front end using the shared-memory channel.
 
 Detailed notes: [embedding](docs/integration.md) · [link-port reuse](docs/linkport.md) · [design](docs/design.md) · [testing](docs/testing.md) · [plan](PLAN.md).
 
@@ -260,6 +259,22 @@ cp GBScribe.gba ../../assets/roms/GBScribe.gba
 The printer's DATA buffer is the real 2bpp tile format: 20 tiles per row, 16
 bytes per tile, 320 bytes per tile row, 5,760 bytes per 18-row GBScribe chunk.
 Shade 0 is paper; 3 is the darkest burn.
+
+### Rebuilding the emulator core
+
+`vendor/mgba/` is a WebAssembly build of mGBA with the link-port channel. The
+source changes are in [`tools/mgba-wasm.patch`](tools/mgba-wasm.patch). To
+rebuild, apply the patch to
+[`thenick775/mgba`](https://github.com/thenick775/mgba) on `feature/wasm`, build
+with the platform's Docker image, and copy `mgba.js` and `mgba.wasm` back into
+`vendor/mgba/`:
+
+```sh
+docker build -t local-mgba/wasm:2.0 mgba/src/platform/wasm/docker
+docker run --rm -v "$PWD/mgba:/home/mgba/src" local-mgba/wasm:2.0
+cp mgba/build-wasm/wasm/mgba.js vendor/mgba/
+cp mgba/build-wasm/wasm/mgba.wasm vendor/mgba/
+```
 
 ## Tests
 

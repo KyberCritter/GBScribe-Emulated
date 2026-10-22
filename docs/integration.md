@@ -44,10 +44,13 @@ Supported attributes:
 | Attribute | Default |
 | --- | --- |
 | `rom-url` | `../assets/roms/GBScribe.gba` relative to the module |
-| `bios-url` | `../vendor/gbajs/resources/bios.bin` |
-| `vendor-base` | `../vendor/gbajs/js/` |
 | `font-url` | `../assets/fonts/PressStart2P-Regular.woff2` |
+| `gba-image` | `../assets/img/gba.webp` |
+| `printer-image` | `../assets/img/printer.webp` |
 | `guide-prompt` | `true`; set to `false` to skip the first-load guide question |
+
+`bios-url` and `vendor-base` are still accepted for compatibility; the
+WebAssembly core is self-contained and does not read either path.
 
 ## Option B — iframe
 
@@ -91,18 +94,34 @@ first-load notice and `?cookies=reject` for the rejected path.
 
 The demo needs:
 
-- `script-src 'self'` — module + vendored scripts;
+- `script-src 'self' 'wasm-unsafe-eval'` — module, vendored core, WebAssembly;
 - `style-src 'self' 'unsafe-inline'` — the component injects scoped styles;
 - `font-src 'self'` — Press Start 2P;
 - `img-src 'self' data:` — exported paper previews;
-- `media-src` none; no workers; no remote origins.
+- `worker-src 'self' blob:` — the emulator threads and the printer worker;
+- `connect-src 'self'` — no remote origins.
+
+The core uses shared memory, so the embedding page must be cross-origin
+isolated:
+
+```txt
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+`index.html` registers `coi-serviceworker.js` to add those headers on static
+hosts such as GitHub Pages. An embedder that already serves the headers does not
+need it; an embedder that cannot set them must host the demo in an iframe served
+with the headers.
 
 ## Caching and MIME types
 
-Serve `.gba` as `application/octet-stream` (or any binary type). The ROM is
-~82 KB, the font ~12 KB, and the emulator ~300 KB uncompressed. GitHub Pages
-sets the JavaScript MIME type automatically. The test server includes the
-same headers.
+Serve `.gba` as `application/octet-stream` (or any binary type) and `.wasm` as
+`application/wasm`. The ROM is ~82 KB, the font ~12 KB, and the WebAssembly core
+~2 MB uncompressed. GitHub Pages sets the JavaScript MIME type automatically,
+but not `application/wasm`; streaming instantiation falls back to
+`ArrayBuffer` if it is missing, so the demo still boots. The test server sends
+the same headers and MIME types.
 
 ## Updating the ROM
 

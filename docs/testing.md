@@ -116,7 +116,7 @@ the ROM's keyboard navigation for deterministic typing.
 
 ## Notes
 
-- Playwright runs a single worker because GBA.js is CPU-bound.
+- Playwright runs a single worker because the WebAssembly core is CPU-bound.
 - The guide demo takes ~25–30 seconds because GBScribe bit-bangs the printer at
   the real 8192 Hz rate.
 - Screenshots on failure are written to `test-results/` (gitignored).

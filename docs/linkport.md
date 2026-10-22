@@ -1,16 +1,38 @@
 # Reusing the link-port layer
 
-The Game Boy Printer support is split into two reusable pieces:
+The Game Boy Printer support is split into these reusable pieces:
 
 | Piece | File | What it does |
 | --- | --- | --- |
+| mGBA channel | [`../src/emulator/mgba-core.js`](../src/emulator/mgba-core.js) | `RCNT` clock edges, SI replies, and a shared-memory handshake with the printer worker. |
+| Printer host | [`../src/printer/printer-link.js`](../src/printer/printer-link.js), [`../src/printer/printer-worker.js`](../src/printer/printer-worker.js) | Keeps the serial device off the page thread and mirrors its state for the UI. |
 | GBA.js GPIO shim | [`../src/linkport/gba-linkport.js`](../src/linkport/gba-linkport.js) | Teaches stock GBA.js about `RCNT` GPIO mode, clock edges, SI input, and hot-pluggable devices. |
 | Printer device | [`../src/printer/gb-printer.js`](../src/printer/gb-printer.js) | Serial-level Game Boy Printer: packets, checksums, status, 2bpp buffer, paper, motor timing. |
 | Byte transport | [`../src/linkport/byte-link.js`](../src/linkport/byte-link.js) | Adapters for emulators that expose an 8-bit serial register instead of individual clock edges. |
 
-All three are plain JavaScript with no app-specific imports. They are MIT
+All of these are plain JavaScript with no app-specific imports. They are MIT
 licensed, so they can be copied into another emulator project independently of
 the GBScribe UI.
+
+## 0. mGBA browser core
+
+The demo runs mGBA in a worker. `RCNT` writes in GPIO mode call into
+`gbsGpioClock()`, which passes the SO bit to the printer worker through a
+`SharedArrayBuffer` and waits for the SI reply:
+
+```txt
+GBScribe  ──RCNT write──▶  mGBA core (worker)
+                              │  gbsGpioClock(mosi)
+                              ▼
+                     printer worker ──▶ GBPrinterDevice.clock()
+                              │
+                              └── SI bit ──▶ RCNT bit 2
+```
+
+The device survives resets and keeps running while the page is busy. Its
+`row`, `print-done`, and status events cross back over `postMessage`; the page
+handle mirrors state so the UI can read `rollRows`, `paperPercent`, and
+`jobProgress` synchronously.
 
 ## 1. GBA.js
 

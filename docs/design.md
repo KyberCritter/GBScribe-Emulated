@@ -84,12 +84,13 @@ gbscribe-emulated.bindings.v1    remapped keyboard controls
 gbscribe-emulated.sound.v1       mute preference
 gbscribe-emulated.guide.v1       completed | skipped
 gbscribe-emulated.pages.v1       detached sheets + current sheet
-com.endrift.gbajs.*              stock GBA.js FLASH save
+com.endrift.gbajs.*              GBScribe FLASH save (shared key)
 ```
 
-The emulator's `storeSavedata` and `retrieveSavedata` methods are wrapped per
-instance. They delegate to GBA.js only after consent, so rejecting storage
-leaves GBScribe saves fully functional in memory but does not persist them.
+The emulator adapter snapshots the live save memory on save updates. It reads
+and writes the browser store only after consent, so rejecting storage leaves
+GBScribe saves fully functional in memory but does not persist them. The save
+key is the same one GBA.js used, so existing saves keep working.
 Rejecting also clears the demo keys and any `com.endrift.gbajs.*` saves.
 
 Paper pages are serialized as JSON with one base64 string per 281-dot row and
