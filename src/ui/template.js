@@ -20,7 +20,7 @@ export function buildTemplate() {
     <div class="gbs-title">
       <span class="gbs-kicker">Interactive hardware demo</span>
       <h2>GBScribe <span class="gbs-x">×</span> Game Boy Printer</h2>
-      <p>Write or draw on a <b>real GBScribe ROM</b>, then watch a Game Boy Printer burn it onto thermal paper one dot row at a time. The paper is real data, not a canned animation — tear it off, export it, or print it again.</p>
+      <p>Try GBscribe in your browser! Write or draw, then print to an emulated Game Boy Printer. You can even download your "prints" or print them to a real printer.</p>
     </div>
     <div class="gbs-header-actions">
       <button class="gbs-btn is-primary" data-action="demo" type="button">${icons.sparkle}<span>Try a test print</span></button>
