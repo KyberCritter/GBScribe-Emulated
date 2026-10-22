@@ -105,7 +105,8 @@ Game Boy Camera print.
 - **Power**, **Feed**, **paper roll replacement**, cover state, and paper-out
   jams. The printer starts powered on; its switch still disconnects it.
 - Roll gauge and physical paper length in cm/mm.
-- Detached sheets collect in **Printed pages**.
+- Detached sheets collect in **Printed pages**, with PNG, BMP, PDF, Print, and
+  a labeled **Delete** action on every saved print.
 
 ### Export
 - **PNG** and **BMP** at 4× printer resolution.

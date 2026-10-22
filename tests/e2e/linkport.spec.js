@@ -81,9 +81,11 @@ test.describe('Reusable GBA.js link port and host controls', () => {
     await page.waitForTimeout(80);
     expect(await page.evaluate(() => (window.__gbsDemo.gba.keypad.currentDown & (1 << 3)) !== 0)).toBe(true);
 
-    // Reset defaults.
+    // Reset controls.
     await page.locator('gbscribe-emulator [data-action="controls"]').click();
-    await page.locator('gbscribe-emulator [data-reset-bindings]').click();
+    const resetControls = page.locator('gbscribe-emulator [data-reset-bindings]');
+    await expect(resetControls).toContainText('Reset controls');
+    await resetControls.click();
     await expect(page.locator('gbscribe-emulator [data-binding="A"]')).toHaveText('Z');
   });
 

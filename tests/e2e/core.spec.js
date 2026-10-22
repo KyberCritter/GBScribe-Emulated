@@ -99,6 +99,12 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await page.locator('gbscribe-emulator [data-export="png"]').click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/^gbscribe-paper-.*\.png$/);
+
+    const deleteButton = page.locator('gbscribe-emulator .gbs-page-card [data-page-action="delete"]');
+    await expect(deleteButton).toBeVisible();
+    await expect(deleteButton).toContainText('Delete');
+    await deleteButton.click();
+    await expect(page.locator('gbscribe-emulator .gbs-page-card')).toHaveCount(0);
   });
 
   test('paper drag tear, feed, roll replacement, power cycling, and detection', async ({ page }) => {

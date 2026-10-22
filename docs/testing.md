@@ -58,7 +58,7 @@ through the persistence format.
 - GBA power LED alignment with the photographed socket, circular shape, and
   radial specular highlight
 - printer starts ON, switch disconnects/reconnects it, and GBScribe reports disconnected/OK
-- guided test print, paper rendering, tear, PNG download
+- guided test print, paper rendering, tear, PNG download, and per-page delete
 - drag-to-tear, feed hit-zone alignment, hold-to-feed without text selection,
   roll replacement, cover, power cycle + disconnection
 - PNG/BMP/PDF downloads and browser print popup
@@ -103,7 +103,8 @@ through the persistence format.
 
 - GPIO shim with a fake device: clock count, SOUT → SI, attach/detach,
   idempotent install
-- remappable keyboard binding, on-screen Start pointer press, reset defaults
+- remappable keyboard binding, on-screen Start pointer press, labeled Reset
+  controls action
 - printer over the byte-level adapter
 
 The e2e tests use GBScribe's actual BG text map and FLASH save buffer through

@@ -1572,14 +1572,15 @@ class GBScribeDemo {
       }
 
       const remove = document.createElement('button');
-      remove.className = 'gbs-btn gbs-small is-quiet gbs-page-remove';
+      remove.className = 'gbs-btn gbs-small is-danger gbs-page-delete';
       remove.type = 'button';
       remove.dataset.pageAction = 'delete';
       remove.dataset.sheetId = sheet.id;
       remove.setAttribute('aria-label', 'Delete this printed page');
-      remove.innerHTML = icons.trash;
+      remove.innerHTML = `${icons.trash}<span>Delete</span>`;
+      actions.appendChild(remove);
 
-      card.append(thumb, meta, actions, remove);
+      card.append(thumb, meta, actions);
       fragment.appendChild(card);
     }
     this.refs.pageList.replaceChildren(fragment);

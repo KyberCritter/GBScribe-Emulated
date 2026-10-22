@@ -195,7 +195,7 @@ export function buildTemplate() {
       </table>
     </div>
     <div class="gbs-dialog-footer">
-      <button class="gbs-btn is-quiet" data-reset-bindings type="button">Reset defaults</button>
+      <button class="gbs-btn" data-reset-bindings type="button" aria-label="Reset keyboard controls to defaults">${icons.reset}<span>Reset controls</span></button>
       <span class="gbs-spacer"></span>
       <button class="gbs-btn" data-close type="button">Done</button>
     </div>

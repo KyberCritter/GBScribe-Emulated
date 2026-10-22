@@ -703,8 +703,7 @@ export function buildStyles() {
 .gbs-page-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 .gbs-page-actions .gbs-btn { min-height: 25px; padding: 3px 7px; font-size: 10px; box-shadow: none; }
 .gbs-page-actions .gbs-btn svg { width: 12px; height: 12px; }
-.gbs-page-remove { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; padding: 0; border-radius: 50%; }
-.gbs-page-remove svg { width: 12px; height: 12px; }
+.gbs-page-delete { gap: 4px; margin-left: auto; }
 
 /* ------------------------------------------------------------------ toast */
 .gbs-toast {
