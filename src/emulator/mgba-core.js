@@ -74,6 +74,7 @@ export async function createGbaEmulator(options) {
   printer.attachChannel(memory, module._gbsGpioGetChannel());
   await printer.ready;
   module._gbsGpioSetEnabled(1);
+  module._gbsUseFlash1M();
 
   if (!module.loadGame(ROM_PATH, SAVE_PATH)) {
     throw new Error('The GBScribe ROM could not be loaded');
@@ -93,8 +94,15 @@ export async function createGbaEmulator(options) {
     }
   };
 
+  const liveSave = () => {
+    const pointer = module._gbsSaveData();
+    const size = module._gbsSaveSize();
+    if (!size) return null;
+    return module.HEAPU8.slice(pointer, pointer + size);
+  };
+
   const persistSave = () => {
-    const bytes = module.getSave();
+    const bytes = liveSave();
     if (bytes && bytes.length) writeSave(encodeSave(bytes));
   };
 
@@ -132,7 +140,7 @@ export async function createGbaEmulator(options) {
       load16: (address) => module._gbsRead16(address) & 0xffff,
       load32: (address) => ((module._gbsRead16(address) & 0xffff) | ((module._gbsRead16(address + 2) & 0xffff) << 16)) >>> 0,
       get save() {
-        const bytes = module.getSave() || new Uint8Array(0);
+        const bytes = liveSave() || new Uint8Array(0);
         return { buffer: bytes.slice().buffer };
       },
     },
