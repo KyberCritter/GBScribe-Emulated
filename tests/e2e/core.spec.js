@@ -11,6 +11,15 @@ import {
   waitForText,
 } from './helpers.js';
 
+test('printer starts off and the power switch connects it', async ({ page }) => {
+  await boot(page, '/', false);
+  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
+  await waitForText(page, 'Printer: disconnected');
+  await page.locator('gbscribe-emulator .gbs-hit-power').click();
+  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
+  await waitForText(page, 'Printer: OK');
+});
+
 test.describe('GBScribe emulator shell and Game Boy Printer', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page);
@@ -56,6 +65,18 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => window.__gbsTest.paperRows())).toBeGreaterThan(beforeFeed);
 
+    // Holding the photo's FEED button keeps advancing paper.
+    const feedButton = page.locator('gbscribe-emulator .gbs-hit-feed');
+    await feedButton.scrollIntoViewIfNeeded();
+    const feedBox = await feedButton.boundingBox();
+    const beforeHold = await page.evaluate(() => window.__gbsDemo.printer.rollRows);
+    await page.mouse.move(feedBox.x + feedBox.width / 2, feedBox.y + feedBox.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(650);
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+    expect(await page.evaluate(() => window.__gbsDemo.printer.rollRows)).toBeLessThan(beforeHold - 8);
+
     // Drag the paper tab downward to tear it off physically.
     const rect = await page.evaluate(() => {
       const demo = window.__gbsDemo;
@@ -65,13 +86,13 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     });
     await page.mouse.move(rect.x, rect.y);
     await page.mouse.down();
-    await page.mouse.move(rect.x, rect.y + 72, { steps: 8 });
+    await page.mouse.move(rect.x, rect.y - 72, { steps: 8 });
     await page.mouse.up();
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => window.__gbsTest.detached())).toBe(1);
 
     // Paper compartment: open, remove, and insert.
-    await page.locator('gbscribe-emulator [data-action="paper"]').first().click();
+    await page.locator('gbscribe-emulator [data-action="paper"]').last().click();
     await expect(page.locator('gbscribe-emulator [data-dialog="paper"]')).toBeVisible();
     await page.locator('gbscribe-emulator [data-paper-cover]').click();
     await page.locator('gbscribe-emulator [data-paper-remove]').click();
@@ -83,7 +104,7 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
       })))
       .toEqual({ roll: 0, cover: false, feedDisabled: true });
     await page.locator('gbscribe-emulator [data-paper-replace]').click();
-    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer ready');
+    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
     expect(await page.evaluate(() => window.__gbsDemo.printer.rollRows)).toBe(4000);
     await page.locator('gbscribe-emulator [data-dialog="paper"] [data-close]').first().click();
 
@@ -120,7 +141,22 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await page.locator('gbscribe-emulator [data-export="print"]').click();
     const popup = await popupPromise;
     await popup.waitForLoadState('domcontentloaded');
-    await expect(popup.locator('body')).toContainText('GBScribe print');
+    await expect(popup.locator('img')).toHaveCount(1);
+    const grayscale = await popup.evaluate(async () => {
+      const image = document.querySelector('img');
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0);
+      const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i] !== data[i + 1] || data[i + 1] !== data[i + 2]) return false;
+      }
+      return true;
+    });
+    expect(grayscale).toBe(true);
     await popup.close();
   });
 

@@ -147,7 +147,7 @@ function pathTo(keys, start, target) {
   throw new Error(`No keyboard path from ${start} to ${target}`);
 }
 
-export async function boot(page, path = '/') {
+export async function boot(page, path = '/', powerOn = true) {
   await page.goto(path);
   await page.waitForFunction(() => window.__gbsDemo?.loaded === true, null, { timeout: 30_000 });
   await page.evaluate(() => {
@@ -243,6 +243,12 @@ export async function boot(page, path = '/') {
       resetBindings: () => localStorage.removeItem('gbscribe-emulated.bindings.v1'),
     };
   });
+  if (powerOn) {
+    await page.evaluate(() => {
+      const demo = window.__gbsDemo;
+      if (!demo.printer.powered) demo.printer.setPower(true);
+    });
+  }
   await page.waitForTimeout(500);
 }
 

@@ -32,6 +32,14 @@ const EXPORT_SHADES = [
   [36, 32, 28, 255],
 ];
 
+/** Neutral four-level grayscale for sending a sheet to a real printer. */
+export const GRAY_SHADES = [
+  [255, 255, 255, 255],
+  [170, 170, 170, 255],
+  [85, 85, 85, 255],
+  [0, 0, 0, 255],
+];
+
 let nextSheetId = 1;
 
 export class PaperSheet {
@@ -184,7 +192,7 @@ function fillStrip(imageData, shades, colors, scale) {
  * Render a sheet into a canvas at `scale` device pixels per printer dot.
  * Returns a new canvas with an opaque paper background.
  */
-export function renderSheetToCanvas(sheet, scale = 4) {
+export function renderSheetToCanvas(sheet, scale = 4, palette = EXPORT_SHADES) {
   if (typeof document === 'undefined') throw new Error('renderSheetToCanvas requires a browser');
   const rows = sheet.rows;
   const width = PAPER_WIDTH * scale;
@@ -193,19 +201,19 @@ export function renderSheetToCanvas(sheet, scale = 4) {
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext('2d');
-  context.fillStyle = '#f8f4e9';
+  context.fillStyle = `rgb(${palette[0][0]}, ${palette[0][1]}, ${palette[0][2]})`;
   context.fillRect(0, 0, width, height);
 
   const strip = context.createImageData(width, scale);
   for (let y = 0; y < rows.length; y++) {
-    fillStrip(strip, rows[y], EXPORT_SHADES, scale);
+    fillStrip(strip, rows[y], palette, scale);
     context.putImageData(strip, 0, y * scale);
   }
   return canvas;
 }
 
 /** RGBA pixels for encoders that do not need a canvas. */
-export function renderSheetRgba(sheet, scale = 4) {
+export function renderSheetRgba(sheet, scale = 4, palette = EXPORT_SHADES) {
   const width = PAPER_WIDTH * scale;
   const height = Math.max(1, sheet.rows.length * scale);
   const data = new Uint8ClampedArray(width * height * 4);
@@ -214,7 +222,7 @@ export function renderSheetRgba(sheet, scale = 4) {
     for (let sy = 0; sy < scale; sy++) {
       const rowBase = (y * scale + sy) * width * 4;
       for (let x = 0; x < PAPER_WIDTH; x++) {
-        const color = EXPORT_SHADES[row ? row[x] & 3 : 0];
+        const color = palette[row ? row[x] & 3 : 0];
         for (let sx = 0; sx < scale; sx++) {
           const px = rowBase + (x * scale + sx) * 4;
           data[px] = color[0];

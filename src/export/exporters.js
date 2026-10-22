@@ -8,7 +8,7 @@
  * MIT License. See LICENSE.md.
  */
 
-import { PAPER_WIDTH, renderSheetRgba, renderSheetToCanvas } from '../printer/paper.js';
+import { GRAY_SHADES, PAPER_WIDTH, renderSheetRgba, renderSheetToCanvas } from '../printer/paper.js';
 
 const MM_PER_DOT = 38 / 160; // 38 mm paper, 160 dots across
 const PT_PER_MM = 72 / 25.4;
@@ -210,30 +210,19 @@ export function printSheets(sheets, options = {}) {
   if (!win) return false;
 
   const images = sheets.map((sheet, index) => {
-    const canvas = renderSheetToCanvas(sheet, 4);
-    return `<figure class="sheet"><img alt="Game Boy Printer sheet ${index + 1}" src="${canvas.toDataURL('image/png')}"></figure>`;
+    const canvas = renderSheetToCanvas(sheet, 4, GRAY_SHADES);
+    return `<img alt="Game Boy Printer sheet ${index + 1}" src="${canvas.toDataURL('image/png')}">`;
   });
 
-  const title = (options.title || 'GBScribe print').replace(/[<>&"]/g, '');
   win.document.open();
   win.document.write(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>${title}</title>
+<html><head><meta charset="utf-8"><title>GBScribe print</title>
 <style>
-  @page { margin: 12mm; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: #fff; color: #222; font: 10pt/1.4 ui-monospace, monospace; }
-  .head { margin: 0 0 10mm; }
-  .head h1 { margin: 0 0 2mm; font: 600 15pt/1.2 system-ui, sans-serif; }
-  .head p { margin: 0; color: #555; }
-  .sheet { margin: 0 auto 12mm; width: 90mm; break-inside: avoid; page-break-inside: avoid; }
-  .sheet img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
-  .sheet + .sheet { break-before: page; page-break-before: always; }
-  @media screen { body { background: #e8e4da; padding: 12mm; } .sheet { background: #fff; padding: 6mm; box-shadow: 0 2px 18px #0002; } }
-</style></head>
-<body>
-  <header class="head"><h1>${title}</h1><p>Game Boy Printer paper · 160 dots wide · four shades</p></header>
-  ${images.join('\n')}
-</body></html>`);
+  @page { margin: 0; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  img { display: block; width: 100%; height: auto; image-rendering: pixelated; break-after: page; page-break-after: always; }
+  img:last-child { break-after: auto; page-break-after: auto; }
+</style></head><body>${images.join('')}</body></html>`);
   win.document.close();
   win.focus();
   setTimeout(() => {

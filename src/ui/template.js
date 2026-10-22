@@ -36,13 +36,9 @@ export function buildTemplate() {
     </svg>
     <div class="gbs-link-chip" aria-label="Link Cable connected">${icons.link} Link Cable</div>
     <section class="gbs-gba-column" aria-label="Game Boy Advance running GBScribe">
-      <div class="gbs-device-label">
-        <span class="gbs-led" data-gba-led></span>
-        <span>Game Boy Advance</span>
-        <span class="gbs-meta">GBScribe · 240 × 160</span>
-      </div>
       <div class="gbs-gba-photo">
         <img class="gbs-gba-image" data-gba-image alt="" draggable="false">
+        <span class="gbs-gba-power-led" data-gba-power aria-hidden="true"></span>
         <div class="gbs-screen-mount">
           <canvas data-screen width="240" height="160" aria-label="Game Boy Advance screen"></canvas>
           <div class="gbs-screen-loading" data-loading>
@@ -67,7 +63,6 @@ export function buildTemplate() {
       <div class="gbs-under-gba">
         <button class="gbs-btn gbs-small" data-action="reset" type="button">${icons.reset}<span>Reset GBA</span></button>
         <button class="gbs-btn gbs-small" data-action="mute" type="button" data-mute-button>${icons.sound}<span data-mute-label>Sound on</span></button>
-        <span class="gbs-save-hint" data-save-hint>Click the GBA to use the keyboard</span>
       </div>
     </section>
 
@@ -87,11 +82,11 @@ export function buildTemplate() {
           <div class="gbs-paper-empty" data-paper-empty aria-hidden="true"></div>
           <div class="gbs-paper-scroll" data-paper-scroll>
             <div class="gbs-paper is-empty" data-paper hidden>
+              <div class="gbs-tear-tab" data-tear-tab role="button" tabindex="0" aria-label="Drag up to tear the paper off">
+                ${icons.scissors}<span>Drag up to tear</span>
+              </div>
               <div class="gbs-paper-canvas-clip" data-paper-clip>
                 <canvas data-paper-canvas width="281" height="512" aria-label="Printed Game Boy Printer paper"></canvas>
-              </div>
-              <div class="gbs-tear-tab" data-tear-tab role="button" tabindex="0" aria-label="Drag down to tear the paper off">
-                ${icons.scissors}<span>Drag down to tear</span>
               </div>
             </div>
           </div>
@@ -99,10 +94,9 @@ export function buildTemplate() {
         <button class="gbs-scissors" data-action="tear" type="button" aria-label="Cut the paper off with scissors" disabled>${icons.scissors}</button>
       </div>
 
-      <div class="gbs-statusbar" aria-live="polite">
+      <div class="gbs-statusbar" data-statusbar aria-live="polite">
         <span class="gbs-status-led" data-status-led></span>
-        <span data-status>Printer ready</span>
-        <span class="gbs-roll-text" data-roll-text>1.0 m paper</span>
+        <span data-status>Printer on</span>
       </div>
     </section>
   </div>
@@ -151,7 +145,7 @@ export function buildTemplate() {
         </div>
         <div class="gbs-help-card">
           <h4>3 · Handle the paper</h4>
-          <p>The printer consumes paper as it prints. Drag the tear tab down or click the scissors to cut a sheet off. Open the paper compartment to fit a fresh roll, and use <b>Feed</b> to advance blank paper.</p>
+          <p>The printer consumes paper as it prints. Drag the tear tab up or click the scissors to cut a sheet off. Open the paper compartment to fit a fresh roll, and use <b>Feed</b> to advance blank paper.</p>
         </div>
         <div class="gbs-help-card">
           <h4>4 · Keep it</h4>
@@ -168,8 +162,9 @@ export function buildTemplate() {
         <li>Nothing is uploaded. The ROM, BIOS, and all processing stay in this page.</li>
       </ul>
       <div class="gbs-legal">
-        GBScribe and AdvancePrint by Scott Ratchford, MIT licensed. Emulator core: GBA.js by Jeffrey Pfau, BSD-2-Clause, with a GPIO link-port device added for this demo.
-        Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy Advance and Game Boy Printer are trademarks of Nintendo.
+        GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the MIT License.
+        Emulator core: GBA.js © 2012–2013 Jeffrey Pfau, licensed under the BSD 2-Clause License.
+        Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy Advance, and Game Boy Printer are trademarks of Nintendo.
       </div>
     </div>
     <div class="gbs-dialog-footer">

@@ -46,9 +46,10 @@ left margin:  60 dots
 right margin: 61 dots
 ```
 
-The paper exits the white slot and hangs down over the printer front. Its top
-remains at the slot while new rows appear at the bottom; the output viewport
-auto-follows the newest row and exposes the tear tab.
+The paper exits the white slot and moves upward over the printer front. Its
+bottom stays at the slot while the free top edge grows upward; new rows appear
+at the bottom. The output viewport auto-follows the newest row, and the tear tab
+is on the free top edge (scissors are always available).
 
 ## Link Cable
 

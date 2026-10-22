@@ -159,25 +159,6 @@ export function buildStyles() {
 .gbs-printer-column { order: 0; }
 .gbs-gba-column { order: 1; }
 
-.gbs-device-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 10px 4px;
-  font-size: 10px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--gbs-ink-faint);
-  font-weight: 700;
-}
-.gbs-device-label .gbs-meta { margin-left: auto; letter-spacing: .04em; text-transform: none; font-weight: 500; }
-.gbs-led {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--gbs-green);
-  box-shadow: 0 0 0 3px #3f9b5720, 0 0 10px #3f9b5780;
-}
-.gbs-led.is-off { background: #9b9488; box-shadow: none; }
-
 /* ------------------------------------------------------------------ GBA */
 .gbs-gba-photo {
   position: relative;
@@ -192,6 +173,23 @@ export function buildStyles() {
   width: 100%;
   height: auto;
   pointer-events: none;
+}
+.gbs-gba-power-led {
+  position: absolute;
+  left: 84.1%;
+  top: 16.4%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b0606;
+  box-shadow: 0 0 0 1px #260000, 0 1px 0 #ffffff22 inset;
+  z-index: 16;
+  pointer-events: none;
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.gbs-gba-power-led.on {
+  background: #ff2f3a;
+  box-shadow: 0 0 8px #ff2f3acc, 0 0 0 1px #6d0008, 0 1px 0 #fff5 inset;
 }
 .gbs-screen-mount {
   position: absolute;
@@ -270,19 +268,19 @@ export function buildStyles() {
 .gbs-hit:active, .gbs-hit.is-pressed { background: #ffffff3d; box-shadow: 0 0 0 3px #fff; }
 .gbs-hit:focus-visible { outline: 3px solid #ffffffd9; outline-offset: 2px; }
 
-.gbs-hit-a { left: 88.2%; top: 34%; width: 8.5%; height: 14%; }
-.gbs-hit-b { left: 80%; top: 33.5%; width: 8.5%; height: 14%; }
-.gbs-hit-start { left: 17%; top: 59%; width: 7%; height: 9%; }
-.gbs-hit-select { left: 17.3%; top: 66%; width: 7%; height: 9%; }
+.gbs-hit-a { left: 89.5%; top: 33.8%; width: 8%; height: 13%; }
+.gbs-hit-b { left: 79.8%; top: 39.4%; width: 8%; height: 13%; }
+.gbs-hit-start { left: 16%; top: 62.5%; width: 5.4%; height: auto; aspect-ratio: 1; }
+.gbs-hit-select { left: 16.1%; top: 72.2%; width: 5.4%; height: auto; aspect-ratio: 1; }
 .gbs-hit-l { left: 8%; top: 1%; width: 22%; height: 5.5%; border-radius: 0 0 18px 18px; }
 .gbs-hit-r { right: 7%; top: 1%; width: 22%; height: 5.5%; border-radius: 0 0 18px 18px; }
 
 .gbs-dpad-photo {
   position: absolute;
-  left: 4.6%;
-  top: 31%;
-  width: 14.8%;
-  height: 24.5%;
+  left: 4.7%;
+  top: 31.6%;
+  width: 13.3%;
+  height: 22.2%;
   z-index: 14;
 }
 .gbs-dpad-photo button {
@@ -313,7 +311,7 @@ export function buildStyles() {
 }
 .gbs-port-top {
   top: -1.2%;
-  left: 54.5%;
+  left: 37.5%;
   width: 7%;
   height: 2.4%;
   border-radius: 2px 2px 4px 4px;
@@ -396,17 +394,17 @@ export function buildStyles() {
   border-radius: 14% 14% 8% 8% / 20% 20% 6% 6%;
 }
 .gbs-hit-feed {
-  left: 14%;
-  top: 78%;
-  width: 20%;
+  left: 12.8%;
+  top: 77.2%;
+  width: 21.5%;
   height: 11%;
   border-radius: 50%;
 }
 .gbs-hit-power {
-  left: 60%;
-  top: 77.5%;
-  width: 27%;
-  height: 14%;
+  left: 54.3%;
+  top: 78%;
+  width: 27.2%;
+  height: 14.7%;
   border-radius: 7px;
 }
 .gbs-port-printer {
@@ -438,13 +436,13 @@ export function buildStyles() {
 .gbs-paper-stage {
   position: absolute;
   left: 50%;
-  top: 39.9%;
+  top: 0.5%;
   width: 62%;
-  height: 38%;
+  height: 39.4%;
   transform: translateX(-50%);
-  z-index: 8;
+  z-index: 18;
   overflow: hidden;
-  border-radius: 0 0 2px 2px;
+  border-radius: 2px 2px 0 0;
 }
 .gbs-paper-empty {
   position: absolute;
@@ -472,6 +470,7 @@ export function buildStyles() {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
   padding: 0;
   scrollbar-width: thin;
@@ -485,7 +484,7 @@ export function buildStyles() {
   position: relative;
   width: 100%;
   flex: 0 0 auto;
-  margin: 0;
+  margin: auto 0 0;
   background: var(--gbs-paper);
   border-radius: 1px 1px 0 0;
   box-shadow:
@@ -497,8 +496,8 @@ export function buildStyles() {
   transition: transform .18s ease;
   touch-action: pan-y;
 }
-.gbs-paper.is-near { transform: translateY(2px); }
-.gbs-paper.is-tearing { transform: translateY(16px) rotate(.5deg); }
+.gbs-paper.is-near { transform: translateY(-2px); }
+.gbs-paper.is-tearing { transform: translateY(-16px) rotate(-.5deg); }
 .gbs-paper::before {
   content: "";
   position: absolute;
@@ -542,7 +541,7 @@ export function buildStyles() {
   justify-content: center;
   gap: 5px;
   height: 24px;
-  border-top: 1px dashed #9d927f;
+  border-bottom: 1px dashed #9d927f;
   background: linear-gradient(#f4eedf, #eae2d1);
   color: #6b6357;
   font-size: 7px;
@@ -558,7 +557,7 @@ export function buildStyles() {
 
 .gbs-scissors {
   position: absolute;
-  top: 36.5%;
+  top: 1.5%;
   right: -1%;
   z-index: 30;
   width: 34px;
@@ -581,6 +580,7 @@ export function buildStyles() {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
   gap: 8px;
   margin-top: 18px;
   padding: 7px 10px;
@@ -590,7 +590,6 @@ export function buildStyles() {
   font-size: 11px;
   color: var(--gbs-ink-soft);
 }
-.gbs-statusbar .gbs-roll-text { margin-left: auto; color: var(--gbs-ink-faint); font-variant-numeric: tabular-nums; }
 .gbs-status-led { width: 7px; height: 7px; border-radius: 50%; background: var(--gbs-green); box-shadow: 0 0 6px #3f9b5780; flex: 0 0 auto; }
 .gbs-status-led.busy { background: var(--gbs-amber); box-shadow: 0 0 7px #e8a51bcc; }
 .gbs-status-led.error { background: var(--gbs-red); box-shadow: 0 0 7px #bf3b30cc; }
@@ -794,7 +793,6 @@ export function buildStyles() {
   .gbs-gba-column { order: 0; }
   .gbs-printer-column { order: 2; max-width: 420px; margin: 0 auto; width: 100%; }
   .gbs-gba-photo { max-width: 700px; }
-  .gbs-device-label { max-width: 700px; margin: 0 auto 10px; }
   .gbs-under-gba { max-width: 700px; margin: 13px auto 0; }
 }
 @media (max-width: 640px) {
@@ -815,7 +813,6 @@ export function buildStyles() {
   .gbs-export .gbs-btn { flex: 1; }
   .gbs-paper-panel { grid-template-columns: 1fr; }
   .gbs-paper-visual { height: 90px; }
-  .gbs-save-hint { width: 100%; margin-left: 0; }
   .gbs-toast { position: fixed; top: auto; bottom: 12px; }
   .gbs-export-label { display: none; }
 }

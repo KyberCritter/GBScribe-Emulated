@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GBScribe × Game Boy Printer — interactive emulator</title>
-  <meta name="description" content="Run GBScribe, a real Game Boy Advance word processor, in your browser and print to an emulated Game Boy Printer. Tear the paper, replace the roll, and export your print.">
+  <title>GBScribe in Your Browser</title>
+  <meta name="description" content="GBScribe is Scott Ratchford's word processor and drawing tool for the Game Boy Advance that prints to a real Game Boy Printer. This is a fully emulated demonstration.">
   <meta name="color-scheme" content="light">
   <link rel="icon" type="image/png" href="assets/img/logo.png">
-  <meta property="og:title" content="GBScribe × Game Boy Printer — interactive emulator">
-  <meta property="og:description" content="Type on a GBA, print on thermal paper, and tear it off. A hardware-level browser demo.">
+  <meta property="og:title" content="GBScribe in Your Browser">
+  <meta property="og:description" content="A fully emulated GBScribe and Game Boy Printer demonstration.">
   <link rel="preload" href="assets/fonts/PressStart2P-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <style>
     :root { color-scheme: light; }
@@ -39,22 +39,6 @@
     }
     .page-title { display: flex; align-items: flex-start; gap: 16px; }
     .page-logo { width: 58px; height: 58px; margin-top: 2px; image-rendering: pixelated; filter: drop-shadow(0 4px 8px #3d332222); flex: 0 0 auto; }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font: 700 10px/1 ui-monospace, monospace;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: #8f1b36;
-      margin-bottom: 10px;
-    }
-    .eyebrow::before {
-      content: "";
-      width: 22px;
-      height: 1px;
-      background: currentColor;
-    }
     h1 {
       max-width: 20ch;
       margin: 0;
@@ -69,26 +53,6 @@
       color: #5e584f;
       font-size: clamp(14px, 1.4vw, 16px);
       line-height: 1.6;
-    }
-    .page-meta {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: #7b7367;
-      font: 600 11px/1.4 ui-monospace, monospace;
-      letter-spacing: .02em;
-      padding-bottom: 3px;
-    }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 9px;
-      border: 1px solid #d3c9b7;
-      border-radius: 999px;
-      background: #fffdf7;
-      color: #5e584f;
     }
     .page-foot {
       max-width: 1180px;
@@ -113,25 +77,22 @@
       <div class="page-title">
         <img class="page-logo" src="assets/img/logo.png" alt="GBScribe logo: a Game Boy with a quill and ink pot">
         <div>
-          <span class="eyebrow">Hardware demo · homebrew</span>
-          <h1>GBScribe on a Game Boy Advance,<br>printed on thermal paper.</h1>
-          <p class="lede">A word processor and pixel-art tool for real GBA hardware, running here in an emulator with a serial-level Game Boy Printer on the other end of the Link Cable. Type something, print it, then tear it off.</p>
+          <h1>GBScribe in Your Browser.</h1>
+          <p class="lede">GBScribe is Scott Ratchford's word processor and drawing tool for the Game Boy Advance that prints to a real Game Boy Printer. This is a fully emulated demonstration to give you the full experience without needing any of the hardware.</p>
         </div>
       </div>
-      <div class="page-meta">
-        <span class="chip">GBScribe v0.3</span>
-        <span class="chip">160 dots · 4 shades</span>
-        <span class="chip">No uploads</span>
-      </div>
+
     </header>
 
     <gbscribe-emulator></gbscribe-emulator>
 
     <footer class="page-foot">
-      GBScribe and AdvancePrint © Scott Ratchford, MIT licensed. Browser emulation built on
-      <a href="https://github.com/endrift/gbajs" rel="noopener">GBA.js</a> by Jeffrey Pfau (BSD-2-Clause),
-      extended with a Game Boy Printer device on the GPIO link port.
-      Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy Advance and Game Boy Printer are trademarks of Nintendo.
+      GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software,
+      licensed under the <a href="LICENSE.md">MIT License</a>.
+      Browser emulation built on <a href="https://github.com/endrift/gbajs" rel="noopener">GBA.js</a>
+      © 2012–2013 Jeffrey Pfau, licensed under the
+      <a href="vendor/gbajs/COPYING">BSD 2-Clause License</a>.
+      Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy Advance, and Game Boy Printer are trademarks of Nintendo.
     </footer>
   </main>
   <script type="module" src="./src/gbscribe-demo.js"></script>

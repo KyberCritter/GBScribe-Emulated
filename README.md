@@ -46,7 +46,7 @@ front-on crimson GBA with a white bezel and white controls, and a front-on
 beige printer with a smoked paper-roll cover, black brand band, and white
 output slot. The printer is on the left, the GBA on the right. The Link Cable leaves
 the **top** of the GBA and enters the **right side** of the printer. Paper feeds
-out of the white slot and hangs down over the printer, like the real thing. The
+out of the white slot and rises up over the printer, like the real thing. The
 print image is centered on the paper at the ~57% width measured from a real
 Game Boy Camera print.
 
@@ -54,7 +54,7 @@ Game Boy Camera print.
 
 ### GBA and GBScribe
 - Unmodified GBScribe ROM built from the project's `master` branch.
-- 240×160 screen in a translucent crimson GBA shell, with clickable/touch
+- 240x160 screen in a translucent crimson GBA shell, with clickable/touch
   D-pad, A/B, L/R, Start, and Select.
 - Keyboard controls, fully remappable and stored in `localStorage`.
 - GBA saves (GBScribe's FLASH1M save slots) persist in the browser.
@@ -68,7 +68,7 @@ Game Boy Camera print.
 - Portrait printer based on the hardware photo: smoked roll cover, black brand
   band, white paper slot, red FEED button, gray POWER switch.
 - **Slow, visible paper feed** from the white slot — one dot row at a time,
-  hanging down over the printer front.
+  rising up over the printer front.
 - Paper is 281 dots wide with the 160-dot print centered at ~57%, matching a
   real Game Boy Camera print.
 - **Tear by dragging** the paper or click the **scissors**.
@@ -108,9 +108,6 @@ or, with the Playwright test server:
 npm install
 npm run serve
 ```
-
-A static host such as GitHub Pages works as-is. `.github/workflows/pages.yml`
-deploys the root of the repository.
 
 ## Embed it in a Jekyll / GitHub Pages blog
 
@@ -183,7 +180,7 @@ the demo to rebind any button; **Reset defaults** restores the table above.
 2. Choose **New text document** or **New drawing**.
 3. Press **Start** again to open the document/drawing menu.
 4. Choose **Print document** or **Print drawing**, then **A: Print**.
-5. Drag the paper down or use the scissors when it is done.
+5. Drag the paper up or use the scissors when it is done.
 6. Export the sheet, replace the roll, or power-cycle the printer.
 
 Or click **Try a test print** to watch the whole chain automatically.
@@ -239,7 +236,7 @@ editor, drawing tools, saves, settings, credits, legal page, instructions,
 Konami Easter egg, QR print, drawing print, paper tearing, roll replacement,
 power cycling, exports, rebinding, and the reusable GPIO/byte link layers.
 
-The e2e suite has 16 tests; the Node suite has 18. The e2e tests read
+The e2e suite has 17 tests; the Node suite has 18. The e2e tests read
 GBScribe's real BG text map and FLASH save data through the emulator, so
 assertions cover actual ROM state rather than DOM mocks.
 
@@ -274,10 +271,9 @@ vendor/gbajs/   stock GBA.js (BSD-2-Clause)
 
 ## Legal
 
-GBScribe and AdvancePrint by Scott Ratchford, MIT licensed.
+GBScribe and AdvancePrint ? Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the [MIT License](LICENSE.md).
 
-GBA.js by Jeffrey Pfau, BSD-2-Clause; see
-[`vendor/gbajs/COPYING`](vendor/gbajs/COPYING).
+GBA.js ? 2012?2013 Jeffrey Pfau, licensed under the [BSD 2-Clause License](vendor/gbajs/COPYING).
 
 Press Start 2P font, SIL Open Font License 1.1; see
 [`assets/fonts/OFL.txt`](assets/fonts/OFL.txt).
@@ -288,7 +284,7 @@ cut out for the browser shells; see [`assets/img/README.md`](assets/img/README.m
 Third-party notices are collected in [`LICENSES/`](LICENSES/).
 
 Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy
-Color, Game Boy Advance and Game Boy Printer are trademarks of Nintendo. “QR
+Color, Game Boy Advance, and Game Boy Printer are trademarks of Nintendo. “QR
 Code” is a registered trademark of DENSO WAVE Incorporated.
 
 ## References

@@ -2,8 +2,9 @@
 
 ## Goal
 
-Add a section to a personal GitHub Pages blog that demonstrates GBScribe and
-the Game Boy Printer with real emulated hardware:
+Prepare the project so it can be added as a section to a personal GitHub Pages blog that demonstrates GBScribe and the Game Boy Printer with real emulated hardware:
+
+**Do not** attempt to publish to GitHub Pages.
 
 - a pre-existing in-browser GBA emulator running a GBScribe ROM built from the
   upstream main branch (or latest release);
@@ -32,9 +33,8 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | PNG / BMP / PDF / print | Done |
 | Reusable link-port package | Done (`src/linkport/`) |
 | Node unit tests | Done (18) |
-| Playwright feature tests | Done (16) |
+| Playwright feature tests | Done (17) |
 | Blog embedding docs | Done |
-| GitHub Pages workflow | Done |
 
 ## Requirements trace
 
@@ -186,9 +186,9 @@ Implementation notes:
 - The printer sits on the **left**, the GBA on the **right**.
 - The GBA screen is the real 240×160 canvas, scaled with pixelated rendering.
 - The printer is the supplied photo; paper exits the **white slot** below the
-  roll cover and hangs down over the printer front, like a real print.
+  roll cover and moves upward over the printer front, like a real print.
 - The paper strip is clipped in a scrollable window with auto-follow; its
-  tear tab is always reachable at the bottom.
+  tear tab is at the free top edge (use the scissors when it scrolls out of view).
 - The Link Cable starts at the GBA's **top link port** and ends at the
   printer's **right-side port**. The SVG path is measured from the actual DOM
   port rectangles at runtime, so it follows responsive layout.

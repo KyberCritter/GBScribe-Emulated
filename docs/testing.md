@@ -26,7 +26,7 @@ types for `.gba`, `.woff2`, and ES modules.
 - RLE expansion
 - multi-copy prints
 - `ByteLinkAdapter`
-- a full GB Camera-sized 160?144 image through the byte adapter
+- a full GB Camera-sized 160x144 image through the byte adapter
 
 `tests/paper.test.js`
 
@@ -45,6 +45,7 @@ types for `.gba`, `.woff2`, and ES modules.
 `tests/e2e/core.spec.js`
 
 - boot + printer detection
+- printer starts OFF, switch connects it, and GBScribe reports disconnected/OK
 - guided test print, paper rendering, tear, PNG download
 - drag-to-tear, feed, roll replacement, cover, power cycle + disconnection
 - PNG/BMP/PDF downloads and browser print popup
@@ -56,7 +57,7 @@ types for `.gba`, `.woff2`, and ES modules.
   save-slot data, wrap setting, new/load, print
 - drawing: pencil, eraser, line, rect, stamp, palette, save/load/clear, print,
   drawing menu
-- credits/legal/QR print, instructions paging and print-confirm cancel,
+- credits/legal/QR print, instructions paging, and print-confirm cancel,
   About/Instructions from the editor menu
 - Konami Easter egg debug menu and print path
 - title-screen load of a saved document after reset

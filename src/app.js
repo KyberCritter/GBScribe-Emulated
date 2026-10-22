@@ -223,9 +223,12 @@ class GBScribeDemo {
     this.paperView = new PaperCanvasView(this.refs.paperCanvas, { scale: 2 });
     this.printer = new GBPrinterDevice({
       onEvent: (event) => this.onPrinterEvent(event),
-      printSpeed: 17,
-      feedSpeed: 11,
+      printSpeed: 50,
+      feedSpeed: 32,
     });
+    // The hardware photo shows the POWER rocker in the OFF position. Start
+    // there; the quick demo and the switch turn the emulated printer on.
+    this.printer.powered = false;
     this.attachUi();
     this.updateMuteUi();
     this.updateUI();
@@ -258,15 +261,14 @@ class GBScribeDemo {
       paperScroll: q('[data-paper-scroll]'),
       paperEmpty: q('[data-paper-empty]'),
       tearTab: q('[data-tear-tab]'),
+      statusbar: q('[data-statusbar]'),
       status: q('[data-status]'),
       statusLed: q('[data-status-led]'),
       pilot: q('[data-pilot]'),
       linkPilot: q('[data-link-pilot]'),
       rollFill: q('[data-roll-fill]'),
       rollLabel: q('[data-roll-label]'),
-      rollText: q('[data-roll-text]'),
-      gbaLed: q('[data-gba-led]'),
-      saveHint: q('[data-save-hint]'),
+      gbaPower: q('[data-gba-power]'),
       muteLabel: q('[data-mute-label]'),
       pages: q('[data-pages]'),
       pageList: q('[data-page-list]'),
@@ -344,7 +346,6 @@ class GBScribeDemo {
     this.romBuffer = rom;
     gba.runStable();
     this.loaded = true;
-    this.refs.gbaLed.classList.remove('is-off');
     await sleep(650);
     this.refs.loading.classList.add('is-hidden');
     this.updateUI();
@@ -471,12 +472,36 @@ class GBScribeDemo {
       feed.addEventListener('lostpointercapture', stop, { signal });
     }
     for (const button of this.refs.feedButtons) {
-      if (button.classList.contains('gbs-feed')) continue;
+      if (button.classList.contains('gbs-feed') || button.classList.contains('gbs-hit-feed')) continue;
       button.addEventListener('click', () => {
         this.printer.feedRows(8);
         this.sound.feed();
         this.scheduleUI();
       }, { signal });
+    }
+
+    const photoFeed = this.shadow.querySelector('.gbs-hit-feed');
+    if (photoFeed) {
+      photoFeed.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        photoFeed.setPointerCapture?.(event.pointerId);
+        photoFeed.classList.add('is-pressed');
+        this.printer.startFeed();
+      }, { signal });
+      const stopFeed = () => {
+        photoFeed.classList.remove('is-pressed');
+        this.printer.stopFeed();
+      };
+      photoFeed.addEventListener('pointerup', stopFeed, { signal });
+      photoFeed.addEventListener('pointercancel', stopFeed, { signal });
+      photoFeed.addEventListener('lostpointercapture', stopFeed, { signal });
+      photoFeed.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          this.printer.startFeed();
+        }
+      }, { signal });
+      photoFeed.addEventListener('keyup', stopFeed, { signal });
     }
 
     this.refs.tearTab.addEventListener('pointerdown', (event) => this.beginTearDrag(event), { signal });
@@ -563,11 +588,6 @@ class GBScribeDemo {
 
   setKeyboardActive(active) {
     this.keyboardActive = Boolean(active);
-    if (this.refs.saveHint) {
-      this.refs.saveHint.textContent = this.keyboardActive
-        ? 'Keyboard active · GBScribe saves to this browser'
-        : 'Click the GBA to use the keyboard';
-    }
   }
 
   layoutCable() {
@@ -582,9 +602,20 @@ class GBScribeDemo {
     const sy = gbaRect.top - stageRect.top + 1;
     const ex = printerRect.right - stageRect.left + 2;
     const ey = printerRect.top + printerRect.height / 2 - stageRect.top;
-    const dir = ex >= sx ? 1 : -1;
-    const lift = Math.max(48, Math.min(150, Math.abs(ex - sx) * 0.26));
-    const d = `M ${sx.toFixed(1)} ${sy.toFixed(1)} C ${(sx + dir * lift).toFixed(1)} ${(sy - lift).toFixed(1)}, ${(ex + dir * lift * 0.6).toFixed(1)} ${(ey - lift * 1.25).toFixed(1)}, ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+    const turnY = sy - 88;
+    const cableX = ex + 34;
+    const r = Math.min(22, Math.abs(sx - cableX) / 2, Math.abs(ey - turnY) / 2);
+    // Up from the GBA, rounded 90° left, across, rounded 90° down, down the
+    // right side of the printer, then rounded into its side port.
+    const d =
+      `M ${sx.toFixed(1)} ${sy.toFixed(1)} ` +
+      `L ${sx.toFixed(1)} ${(turnY + r).toFixed(1)} ` +
+      `Q ${sx.toFixed(1)} ${turnY.toFixed(1)} ${(sx - r).toFixed(1)} ${turnY.toFixed(1)} ` +
+      `L ${(cableX + r).toFixed(1)} ${turnY.toFixed(1)} ` +
+      `Q ${cableX.toFixed(1)} ${turnY.toFixed(1)} ${cableX.toFixed(1)} ${(turnY + r).toFixed(1)} ` +
+      `L ${cableX.toFixed(1)} ${(ey - r).toFixed(1)} ` +
+      `Q ${cableX.toFixed(1)} ${ey.toFixed(1)} ${(cableX - r).toFixed(1)} ${ey.toFixed(1)} ` +
+      `L ${ex.toFixed(1)} ${ey.toFixed(1)}`;
     cable.setAttribute('viewBox', `0 0 ${stageRect.width.toFixed(1)} ${stageRect.height.toFixed(1)}`);
     cablePath.setAttribute('d', d);
     cableHighlight.setAttribute('d', d);
@@ -798,7 +829,7 @@ class GBScribeDemo {
         this.sound.stopMotor();
         this.sound.success();
         this.printerJob = null;
-        this.toast('Print complete. Drag the paper down to tear it off.', false, 4200);
+        this.toast('Print complete. Drag the paper up to tear it off.', false, 4200);
         this.scheduleUI();
         break;
       case 'feed-start':
@@ -907,8 +938,8 @@ class GBScribeDemo {
 
     const move = (moveEvent) => {
       const dy = moveEvent.clientY - startY;
-      if (dy > 12) this.refs.paper.classList.add('is-near');
-      if (dy > 52) {
+      if (Math.abs(dy) > 12) this.refs.paper.classList.add('is-near');
+      if (Math.abs(dy) > 52) {
         this.refs.paper.classList.add('is-tearing');
         torn = true;
       } else {
@@ -1098,7 +1129,7 @@ class GBScribeDemo {
     const paperOut = printer.rollRows <= 0;
     const coverOpen = !printer.coverClosed;
 
-    let status = 'Printer ready';
+    let status = 'Printer on';
     let ledClass = '';
     if (!powered) {
       status = 'Printer off';
@@ -1116,13 +1147,12 @@ class GBScribeDemo {
       status = 'Feeding paper';
       ledClass = 'busy';
     } else if (printer.rollRows <= printer.lowPaperRows) {
-      status = 'Ready · paper low';
+      status = 'Paper low';
     }
     this.refs.status.textContent = status;
     this.refs.statusLed.className = `gbs-status-led ${ledClass}`.trim();
     this.refs.rollFill.style.width = `${printer.paperPercent.toFixed(1)}%`;
     this.refs.rollLabel.textContent = `${Math.round(printer.paperPercent)}%`;
-    this.refs.rollText.textContent = `${formatLength(printer.rollRows)} paper`;
 
     this.refs.pilot.className = 'gbs-pilot';
     if (!powered) {
@@ -1158,7 +1188,7 @@ class GBScribeDemo {
     for (const button of this.refs.demoButtons) {
       button.disabled = !this.loaded;
     }
-    if (this.refs.gbaLed) this.refs.gbaLed.classList.toggle('is-off', !this.loaded);
+    this.refs.gbaPower?.classList.toggle('on', this.loaded);
     this.updatePaperDialog();
   }
 
