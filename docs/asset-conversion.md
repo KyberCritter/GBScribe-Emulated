@@ -6,12 +6,12 @@ emulator/paper into them.
 
 ## 1. Keep the originals out of git
 
-The uploads are copied into `.scratchwork/reference/` (gitignored):
+The uploads are copied into `.scratchwork/reference/issue5/` (gitignored):
 
 ```txt
-user-uIBWG9-0.jpg  front-on crimson GBA
-user-uIBWG9-1.jpg  front-on Game Boy Printer
-user-1PRHhr-0.jpg  printed paper close-up (print-width measurement)
+gba.jpg          front-on crimson GBA
+printer-off.jpg  front-on Game Boy Printer, power off
+printer-on.jpg   the same printer powered on (rotated 90°; reference only)
 ```
 
 The images are the project author's own photographs. The published cutouts are
@@ -25,8 +25,8 @@ in `assets/img/` with attribution in `assets/img/README.md`.
 ```sh
 python -m pip install pillow rembg onnxruntime
 python tools/prepare-assets.py \
-  --gba .scratchwork/reference/user-uIBWG9-0.jpg \
-  --printer .scratchwork/reference/user-uIBWG9-1.jpg
+  --gba .scratchwork/reference/issue5/gba.jpg \
+  --printer .scratchwork/reference/issue5/printer-off.jpg
 ```
 
 The pipeline is:
@@ -37,32 +37,32 @@ The pipeline is:
 4. Resize to a web-friendly width (GBA 1200 px, printer 700 px).
 5. Write both `gba.png` / `printer.png` and lossy-alpha WebP versions.
 
-Why both formats? WebP is what the page loads; the PNG is the higher-quality
-source for other uses and for documentation.
+The resulting cutouts are 1200×691 (GBA) and 700×1358 (printer). Why both
+formats? WebP is what the page loads; the PNG is the higher-quality source for
+other uses and for documentation.
 
 ## 3. Rebuild the printer's empty slot
 
-The printer photo has a short printed paper leader hanging out of the slot. A
-live paper strip is overlaid there, so the leader would show through around the
-edges and in the empty state. The script:
+The printer photo has a printed paper leader hanging out of the slot. A live
+paper strip is overlaid there, so the leader would show through around the
+edges and in the empty state. The script clones a text-free slice of the dark
+slot interior from just above the leader (x 110–590, y 484–510 in the 700 px
+image) down over it (y 508–558). The ribbed platen bar below remains visible,
+and the live paper starts at the slot line.
 
-- samples a text-free slice of the black band,
-- pastes it over the short leader,
-- draws the pale slot lip, the dark opening, and the lower lip.
-
-The live paper starts exactly at the dark opening. This makes the empty state
-look like an empty printer and lets the app's own paper supply the output.
+The old pale lip and lower-lip drawing is no longer needed: this photo already
+has the dark opening and the ribbed bar.
 
 ## 4. Composite the GBA screen
 
-The GBA photo is front-on enough that a flat composite works. In the 1200×708
+The GBA photo is front-on enough that a flat composite works. In the 1200×691
 cutout the black screen occupies:
 
 ```txt
-left:   25.7%
-top:    17.5%
-width:  46.4%
-height: 54.0%
+left:   27.25%
+top:    18.52%
+width:  44.67%
+height: 51.95%
 ```
 
 `src/ui/template.js` places a `<canvas>` in a `.gbs-screen-mount` at those
@@ -75,23 +75,41 @@ this photo.
 
 The photo buttons are not redrawn. Transparent buttons sit over them:
 
-| Control | Approx. position in the 1200×708 GBA photo |
+| Control | Position in the 1200×691 GBA cutout |
 | --- | --- |
-| D-pad | left 4.6%, top 31%, width 14.8%, height 24.5% |
-| A | left 89%, top 32%, width 7.5%, height 13.5% |
-| B | left 81.8%, top 34%, width 7.5%, height 13.5% |
-| Start | left 18%, top 60.5%, width 5.5%, height 7% |
-| Select | left 18%, top 67%, width 5.5%, height 7% |
+| D-pad | left 5%, top 28.7%, width 14.5%, height 24.3% |
+| A | left 88.5%, top 31.9%, width 8%, height 13.8% |
+| B | left 81.8%, top 43.5%, width 8%, height 13.4% |
+| Start | left 16.6%, top 60.6%, width 5.4%, height 5.4% |
+| Select | left 16.5%, top 70.4%, width 5.4%, height 5.4% |
 | L/R | top edge zones |
-| Link port | top edge, moved left as requested |
+| Power LED | centre 81.83%, 16.79%, width 2.7% |
+| Link port | synthetic connector at left 37.5%, top edge |
 
-The printer uses the same technique at the FEED, POWER, and roll-cover regions
-of its 700×1328 cutout. The paper stage starts at the dark slot opening.
+The Start and Select hit zones are larger than the photographed domes for
+touch. The top shoulder buttons and the physical link port are cropped out of
+this photo, so L/R remain edge zones and the cable connector is still a small
+drawn port.
+
+The printer uses the same technique on its 700×1358 cutout:
+
+| Control | Position in the 700×1358 printer cutout |
+| --- | --- |
+| Roll cover | left 11%, top 1.3%, width 78%, height 33.5% |
+| FEED | centre 24.1%, 84.8%; hit zone 25.4% × 14% |
+| POWER | left 60%, top 77.8%, width 35%, height 13.6% |
+| Status LED | centre 88.9%, 50.2% |
+| Link port | right edge, 61% down |
+| Paper stage | left 19%, top 1.5%, width 62%, height 42.5% |
+
+The cigarette-style paper strip grows upward from the slot line at the bottom
+of the paper stage.
+
 
 ## 6. Measure the print width
 
-The close-up shows the printed square at about 443 px on a paper strip about
-780 px wide, so the print is ~57% of the paper. The model uses:
+The earlier printed-paper close-up shows the printed square at about 443 px on a
+paper strip about 780 px wide, so the print is ~57% of the paper. The model uses:
 
 ```txt
 paper width: 281 dots

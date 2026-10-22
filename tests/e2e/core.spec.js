@@ -72,9 +72,9 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
       };
     });
 
-    expect(led.centerX).toBeCloseTo(0.8408, 3);
-    expect(led.centerY).toBeCloseTo(0.1836, 3);
-    expect(led.widthRatio).toBeCloseTo(0.0135, 3);
+    expect(led.centerX).toBeCloseTo(0.8183, 3);
+    expect(led.centerY).toBeCloseTo(0.1679, 3);
+    expect(led.widthRatio).toBeCloseTo(0.027, 3);
     expect(led.height).toBeCloseTo(led.width, 1);
     expect(led.radius).toBe('50%');
     expect(led.background).toContain('radial-gradient');
@@ -134,8 +134,8 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
         userSelect: getComputedStyle(root.querySelector('.gbs-root')).userSelect,
       };
     });
-    expect(feedGeometry.centerX).toBeCloseTo(0.245, 3);
-    expect(feedGeometry.centerY).toBeCloseTo(0.869, 3);
+    expect(feedGeometry.centerX).toBeCloseTo(0.241, 3);
+    expect(feedGeometry.centerY).toBeCloseTo(0.848, 3);
     expect(feedGeometry.aspect).toBeGreaterThan(0.9);
     expect(feedGeometry.aspect).toBeLessThan(1.1);
     expect(feedGeometry.userSelect).toBe('none');

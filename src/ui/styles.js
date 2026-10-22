@@ -180,9 +180,9 @@ export function buildStyles() {
 }
 .gbs-gba-power-led {
   position: absolute;
-  left: 84.08%;
-  top: 18.36%;
-  width: 1.35%;
+  left: 81.83%;
+  top: 16.79%;
+  width: 2.7%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle at 34% 28%, #7b3834 0 8%, #4a1717 42%, #1a0303 100%);
@@ -223,10 +223,10 @@ export function buildStyles() {
 }
 .gbs-screen-mount {
   position: absolute;
-  left: 25.7%;
-  top: 17.5%;
-  width: 46.4%;
-  height: 54%;
+  left: 27.25%;
+  top: 18.52%;
+  width: 44.67%;
+  height: 51.95%;
   background: #050508;
   overflow: hidden;
   border-radius: 2.2% / 4.2%;
@@ -298,19 +298,19 @@ export function buildStyles() {
 .gbs-hit:active, .gbs-hit.is-pressed { background: #ffffff3d; box-shadow: 0 0 0 3px #fff; }
 .gbs-hit:focus-visible { outline: 3px solid #ffffffd9; outline-offset: 2px; }
 
-.gbs-hit-a { left: 89.5%; top: 33.8%; width: 8%; height: 13%; }
-.gbs-hit-b { left: 79.8%; top: 39.4%; width: 8%; height: 13%; }
-.gbs-hit-start { left: 16%; top: 62.5%; width: 5.4%; height: auto; aspect-ratio: 1; }
-.gbs-hit-select { left: 16.1%; top: 72.2%; width: 5.4%; height: auto; aspect-ratio: 1; }
-.gbs-hit-l { left: 8%; top: 1%; width: 22%; height: 5.5%; border-radius: 0 0 18px 18px; }
-.gbs-hit-r { right: 7%; top: 1%; width: 22%; height: 5.5%; border-radius: 0 0 18px 18px; }
+.gbs-hit-a { left: 88.5%; top: 31.9%; width: 8%; height: 13.8%; }
+.gbs-hit-b { left: 81.8%; top: 43.5%; width: 8%; height: 13.4%; }
+.gbs-hit-start { left: 16.6%; top: 60.6%; width: 5.4%; height: auto; aspect-ratio: 1; }
+.gbs-hit-select { left: 16.5%; top: 70.4%; width: 5.4%; height: auto; aspect-ratio: 1; }
+.gbs-hit-l { left: 8%; top: 0.6%; width: 22%; height: 5%; border-radius: 0 0 18px 18px; }
+.gbs-hit-r { right: 7%; top: 0.6%; width: 22%; height: 5%; border-radius: 0 0 18px 18px; }
 
 .gbs-dpad-photo {
   position: absolute;
-  left: 4.7%;
-  top: 31.6%;
-  width: 13.3%;
-  height: 22.2%;
+  left: 5%;
+  top: 28.7%;
+  width: 14.5%;
+  height: 24.3%;
   z-index: 14;
 }
 .gbs-dpad-photo button {
@@ -395,24 +395,24 @@ export function buildStyles() {
 }
 
 .gbs-hit-cover {
-  left: 14%;
-  top: 1%;
-  width: 72%;
-  height: 33%;
+  left: 11%;
+  top: 1.3%;
+  width: 78%;
+  height: 33.5%;
   border-radius: 14% 14% 8% 8% / 20% 20% 6% 6%;
 }
 .gbs-hit-feed {
-  left: 13.75%;
-  top: 81.4%;
-  width: 21.5%;
-  height: 11%;
+  left: 11.4%;
+  top: 77.8%;
+  width: 25.4%;
+  height: 14%;
   border-radius: 50%;
 }
 .gbs-hit-power {
-  left: 54.3%;
-  top: 78%;
-  width: 27.2%;
-  height: 14.7%;
+  left: 60%;
+  top: 77.8%;
+  width: 35%;
+  height: 13.6%;
   border-radius: 7px;
 }
 .gbs-port-printer {
@@ -424,8 +424,8 @@ export function buildStyles() {
 }
 .gbs-printer-led {
   position: absolute;
-  left: 89.7%;
-  top: 54.5%;
+  left: 88.9%;
+  top: 50.2%;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -444,9 +444,9 @@ export function buildStyles() {
 .gbs-paper-stage {
   position: absolute;
   left: 50%;
-  top: 0.5%;
+  top: 1.5%;
   width: 62%;
-  height: 39.4%;
+  height: 42.5%;
   transform: translateX(-50%);
   z-index: 18;
   overflow: hidden;
