@@ -1,0 +1,155 @@
+diff --git a/src/gba/sio.c b/src/gba/sio.c
+index 22b7967..dc6f414 100644
+--- a/src/gba/sio.c
++++ b/src/gba/sio.c
+@@ -9,6 +9,45 @@
+ #include <mgba/internal/gba/io.h>
+ #include <mgba/internal/gba/sio/gbp.h>
+ 
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++
++static int gbsGpioEnabled;
++static int gbsGpioSc = 1;
++static int gbsGpioSout = 1;
++static int gbsGpioChannel[4] __attribute__((aligned(4)));
++
++EMSCRIPTEN_KEEPALIVE void gbsGpioSetEnabled(int enabled) {
++	gbsGpioEnabled = enabled;
++	gbsGpioSc = 1;
++	gbsGpioSout = 1;
++}
++
++EMSCRIPTEN_KEEPALIVE int* gbsGpioGetChannel(void) {
++	return gbsGpioChannel;
++}
++
++EM_JS(int, gbsGpioClock, (int mosi), {
++	const ptr = Module["_gbsGpioGetChannel"]();
++	const channel = new Int32Array(HEAPU8.buffer, ptr, 4);
++	const sequence = (Atomics.add(channel, 0, 1) + 1) | 0;
++	Atomics.store(channel, 1, mosi & 1);
++	Atomics.notify(channel, 0);
++
++	const deadline = performance.now() + 2000;
++	for (;;) {
++		if (Atomics.load(channel, 2) === sequence) {
++			return Atomics.load(channel, 3) & 1;
++		}
++		const wait = deadline - performance.now();
++		if (wait <= 0) {
++			return 1;
++		}
++		Atomics.wait(channel, 2, Atomics.load(channel, 2), Math.min(wait, 100));
++	}
++});
++#endif
++
+ mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O", "gba.sio");
+ 
+ static const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
+@@ -138,6 +177,20 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
+ 		sio->rcnt &= 0xC00F;
+ 		sio->rcnt |= value & 0x1F0;
+ 	}
++
++#ifdef __EMSCRIPTEN__
++	if (gbsGpioEnabled && sio->mode == GBA_SIO_GPIO) {
++		const int sc = sio->rcnt & 1;
++		const bool rising = !gbsGpioSc && sc;
++		gbsGpioSc = sc;
++		if (rising && (value & 0x10)) {
++			gbsGpioSout = gbsGpioClock((value >> 3) & 1) & 1;
++		}
++		if (!(sio->rcnt & 0x40)) {
++			sio->rcnt = (sio->rcnt & ~0x4) | (gbsGpioSout << 2);
++		}
++	}
++#endif
+ }
+ 
+ static void _startTransfer(struct GBASIO* sio) {
+diff --git a/src/platform/wasm/CMakeLists.txt b/src/platform/wasm/CMakeLists.txt
+index 751e8b1..e60fc91 100644
+--- a/src/platform/wasm/CMakeLists.txt
++++ b/src/platform/wasm/CMakeLists.txt
+@@ -2,7 +2,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
+ 	-O3 \
+ 	-s USE_SDL=2 \
+ 	-s INITIAL_MEMORY=256mb \
+-	-s EXPORTED_RUNTIME_METHODS=[\"FS\",\"cwrap\",\"addFunction\",\"removeFunction\"] \
++	-s EXPORTED_RUNTIME_METHODS=[\"FS\",\"HEAPU8\",\"cwrap\",\"addFunction\",\"removeFunction\"] \
+ 	-s ALLOW_TABLE_GROWTH=1 \
+ 	-s ENVIRONMENT='web,worker' \
+ 	-s PTHREAD_POOL_SIZE=5 \
+diff --git a/src/platform/wasm/main.c b/src/platform/wasm/main.c
+index 0a4ac5b..542fcff 100644
+--- a/src/platform/wasm/main.c
++++ b/src/platform/wasm/main.c
+@@ -24,6 +24,15 @@
+ #include <SDL2/SDL_keyboard.h>
+ #include <emscripten.h>
+ #include <emscripten/threading.h>
++#include <stdlib.h>
++#include <string.h>
++#include <mgba/internal/gba/gba.h>
++
++static enum GBASavedataType gbsSaveType = GBA_SAVEDATA_AUTODETECT;
++
++EMSCRIPTEN_KEEPALIVE void gbsUseFlash1M(void) {
++	gbsSaveType = GBA_SAVEDATA_FLASH1M;
++}
+ 
+ // global renderer
+ static struct mEmscriptenRenderer* renderer = NULL;
+@@ -209,6 +218,38 @@ EMSCRIPTEN_KEEPALIVE void buttonUnpress(int id) {
+ 	}
+ }
+ 
++EMSCRIPTEN_KEEPALIVE uint32_t gbsRead16(uint32_t address) {
++	struct mCore* core = activeInputCore();
++	return core ? core->busRead16(core, address) : 0;
++}
++
++static uint8_t gbsSaveBuffer[0x20000];
++static int gbsLastSaveSize;
++
++EMSCRIPTEN_KEEPALIVE uint8_t* gbsSaveData(void) {
++	struct mCore* core = activeInputCore();
++	gbsLastSaveSize = 0;
++	if (!core) {
++		return gbsSaveBuffer;
++	}
++	void* sram = NULL;
++	size_t size = core->savedataClone(core, &sram);
++	if (!sram) {
++		return gbsSaveBuffer;
++	}
++	if (size > sizeof(gbsSaveBuffer)) {
++		size = sizeof(gbsSaveBuffer);
++	}
++	memcpy(gbsSaveBuffer, sram, size);
++	free(sram);
++	gbsLastSaveSize = (int) size;
++	return gbsSaveBuffer;
++}
++
++EMSCRIPTEN_KEEPALIVE int gbsSaveSize(void) {
++	return gbsLastSaveSize;
++}
++
+ EMSCRIPTEN_KEEPALIVE void toggleRewind(bool toggle) {
+ 	if (renderer->thread)
+ 		mCoreThreadSetRewinding(renderer->thread, toggle);
+@@ -547,6 +588,11 @@ EMSCRIPTEN_KEEPALIVE bool loadGame(const char* name, const char* savePathOverrid
+ 	else
+ 		mCoreAutoloadSave(renderer->core);
+ 
++	if (gbsSaveType != GBA_SAVEDATA_AUTODETECT && renderer->core->board) {
++		struct GBA* gba = renderer->core->board;
++		GBASavedataForceType(&gba->memory.savedata, gbsSaveType);
++	}
++
+ 	mCoreAutoloadCheats(renderer->core);
+ 	mCoreAutoloadPatch(renderer->core);
+ 	mSDLInitBindingsGBA(&renderer->core->inputMap);

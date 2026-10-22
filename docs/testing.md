@@ -61,6 +61,8 @@ through the persistence format.
 - guided test print, paper rendering, tear, PNG download, and per-page delete
 - drag-to-tear, feed hit-zone alignment, hold-to-feed without text selection,
   roll replacement, cover, power cycle + disconnection
+- printer image stays still while idle and feeding; feeding state still reports
+  correctly and clears when the feed finishes
 - PNG/BMP/PDF downloads and browser print popup
 - title menu inventory
 
@@ -76,7 +78,8 @@ through the persistence format.
 - title-screen load of a saved document after reset
 - uppercase/symbol/shape keyboard layers
 - Resume and Drawing mode routing
-- mobile layout: stacking, no overflow, image loading, on-screen Start
+- mobile layout: stacking, no overflow, image loading, on-screen Start, and the
+  cable running off the component instead of a “Link Cable” chip
 
 `tests/e2e/cookies.spec.js`
 
@@ -92,6 +95,8 @@ through the persistence format.
 - first-load **Would you like to view a guide?** prompt and Yes/No choice
 - eight-step tour: Start, mode select, writing controls, menu print entry,
   print confirmation, paper, tear, and export
+- on a phone viewport in portrait, an extra first step recommends rotating the
+  device horizontally for the GBA
 - each step waits for a click or key press before the guide performs the
   highlighted action and moves on
 - the tutorial prints and tears a real sheet, then leaves the export controls
@@ -113,7 +118,7 @@ the ROM's keyboard navigation for deterministic typing.
 
 ## Notes
 
-- Playwright runs a single worker because GBA.js is CPU-bound.
+- Playwright runs a single worker because the WebAssembly core is CPU-bound.
 - The guide demo takes ~25–30 seconds because GBScribe bit-bangs the printer at
   the real 8192 Hz rate.
 - Screenshots on failure are written to `test-results/` (gitignored).

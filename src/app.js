@@ -1,13 +1,16 @@
 /**
  * GBScribe × Game Boy Printer — demo orchestration.
  *
- * Mounts the device UI, boots the GBScribe ROM in GBA.js, plugs the emulated
- * printer into the GBA's GPIO link port, and wires the paper/export UI.
+ * Mounts the device UI, boots the GBScribe ROM in the mGBA browser core, plugs
+ * the emulated printer into the GBA's GPIO link port, and wires the paper/export
+ * UI.
  *
  * MIT License. See LICENSE.md.
  */
 
-import { GBPrinterDevice, PAPER_FULL_ROLL_ROWS, STATUS } from './printer/gb-printer.js';
+import { PAPER_FULL_ROLL_ROWS } from './printer/gb-printer.js';
+import { PrinterLink } from './printer/printer-link.js';
+import { createGbaEmulator, romGameCode, SAVE_PREFIX } from './emulator/mgba-core.js';
 import { PaperStore, PaperCanvasView, PaperSheet, PAPER_WIDTH, renderSheetToCanvas } from './printer/paper.js';
 import {
   downloadBlob,
@@ -21,7 +24,6 @@ import { buildTemplate } from './ui/template.js';
 import { buildStyles } from './ui/styles.js';
 import { icons } from './ui/icons.js';
 import { SoundBoard } from './ui/sound.js';
-import { installGbaLinkPort } from './linkport/gba-linkport.js';
 import {
   LocalStore,
   BINDINGS_KEY,
@@ -57,54 +59,8 @@ const DEFAULT_BINDINGS = {
 };
 
 const MM_PER_DOT = 38 / 160;
-const VENDOR_SCRIPTS = [
-  'util.js',
-  'core.js',
-  'arm.js',
-  'thumb.js',
-  'mmu.js',
-  'io.js',
-  'audio.js',
-  'video.js',
-  'video/proxy.js',
-  'video/software.js',
-  'irq.js',
-  'keypad.js',
-  'sio.js',
-  'savedata.js',
-  'gpio.js',
-  'gba.js',
-];
-
-let vendorLoader = null;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.async = false;
-    script.dataset.gbsVendor = 'true';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Could not load ${src}`));
-    document.head.appendChild(script);
-  });
-}
-
-async function ensureVendor(baseUrl) {
-  if (typeof window !== 'undefined' && window.GameBoyAdvance) return;
-  if (!vendorLoader) {
-    vendorLoader = (async () => {
-      const base = String(baseUrl).replace(/\/?$/, '/');
-      for (const file of VENDOR_SCRIPTS) {
-        await loadScript(base + file);
-      }
-      if (!window.GameBoyAdvance) throw new Error('GBA.js did not initialise');
-    })();
-  }
-  await vendorLoader;
-}
 
 async function fetchBuffer(url) {
   const response = await fetch(url, { cache: 'force-cache' });
@@ -219,7 +175,7 @@ class GBScribeDemo {
     this.sound = new SoundBoard({ muted: this.muted });
     this.paperStore = new PaperStore({ onChange: (type, sheet, store) => this.onPaperChange(type, sheet, store) });
     this.paperView = new PaperCanvasView(this.refs.paperCanvas, { scale: 2 });
-    this.printer = new GBPrinterDevice({
+    this.printer = new PrinterLink({
       onEvent: (event) => this.onPrinterEvent(event),
       printSpeed: 50,
       feedSpeed: 32,
@@ -235,6 +191,9 @@ class GBScribeDemo {
     requestAnimationFrame(() => this.layoutCable());
     setTimeout(() => this.layoutCable(), 350);
     setTimeout(() => this.layoutCable(), 1200);
+    window.addEventListener('pagehide', (event) => {
+      if (!event.persisted) this.destroy();
+    });
   }
 
   queryRefs() {
@@ -354,11 +313,6 @@ class GBScribeDemo {
   async boot() {
     this.renderBindings();
     this.renderPages();
-    await ensureVendor(
-      this.options.vendorBase ||
-        new URL('../vendor/gbajs/js/', import.meta.url).href,
-    );
-    this.linkPort = installGbaLinkPort();
     await this.loadEmulator();
   }
 
@@ -366,36 +320,35 @@ class GBScribeDemo {
     const romUrl =
       this.options.romUrl ||
       new URL('../assets/roms/GBScribe.gba', import.meta.url).href;
-    const biosUrl =
-      this.options.biosUrl ||
-      new URL('../vendor/gbajs/resources/bios.bin', import.meta.url).href;
-    const [bios, rom] = await Promise.all([fetchBuffer(biosUrl), fetchBuffer(romUrl)]);
-    if (!window.GameBoyAdvance) throw new Error('GBA.js is unavailable');
+    const rom = await fetchBuffer(romUrl);
+    const saveKey = `${SAVE_PREFIX}${romGameCode(rom)}`;
+    const storage = this.store.storage;
 
-    const gba = new window.GameBoyAdvance();
-    gba.logLevel = gba.LOG_ERROR | gba.LOG_WARN;
-    gba.setLogger((level, message) => {
-      if (level <= gba.LOG_WARN) console.warn('[GBScribe]', message);
+    const gba = await createGbaEmulator({
+      canvas: this.refs.screen,
+      rom,
+      printer: this.printer,
+      muted: this.muted,
+      readSave: () => {
+        if (!this.store.accepted) return null;
+        try {
+          return storage?.getItem(saveKey) || null;
+        } catch {
+          return null;
+        }
+      },
+      writeSave: (value) => {
+        if (!this.store.accepted) return;
+        try {
+          storage?.setItem(saveKey, value);
+        } catch {
+          // Storage can be unavailable in private modes.
+        }
+      },
     });
-    const retrieveSavedata = gba.retrieveSavedata.bind(gba);
-    gba.retrieveSavedata = () => (this.store.accepted ? retrieveSavedata() : false);
-    const storeSavedata = gba.storeSavedata.bind(gba);
-    gba.storeSavedata = () => {
-      if (this.store.accepted) storeSavedata();
-    };
-    gba.setCanvasDirect(this.refs.screen);
-    gba.setBios(bios);
-    if (!gba.setRom(rom)) throw new Error('The GBScribe ROM could not be loaded');
-
-    // The printer is a device on the general-purpose link port. It survives
-    // sio.clear(), but attaching again is harmless and explicit.
-    gba.sio.attachDevice(this.printer);
-    gba.audio.masterVolume = this.muted ? 0 : 0.55;
-    gba.audio.pause(false);
 
     this.gba = gba;
     this.romBuffer = rom;
-    gba.runStable();
     this.loaded = true;
     this.refs.gbaPower?.classList.add('on');
     await sleep(650);
@@ -687,7 +640,6 @@ class GBScribeDemo {
   layoutCable() {
     const { stage, cable, cablePath, cableHighlight, portGba, portPrinter } = this.refs;
     if (!stage || !cable || !portGba || !portPrinter) return;
-    if (window.matchMedia('(max-width: 1040px)').matches) return;
     const stageRect = stage.getBoundingClientRect();
     const gbaRect = portGba.getBoundingClientRect();
     const printerRect = portPrinter.getBoundingClientRect();
@@ -696,6 +648,24 @@ class GBScribeDemo {
     const sy = gbaRect.top - stageRect.top + 1;
     const ex = printerRect.right - stageRect.left + 2;
     const ey = printerRect.top + printerRect.height / 2 - stageRect.top;
+    cable.setAttribute('viewBox', `0 0 ${stageRect.width.toFixed(1)} ${stageRect.height.toFixed(1)}`);
+    if (window.matchMedia('(max-width: 1040px)').matches) {
+      // With the devices stacked, there is no single path between the ports.
+      // Let each end of the cable leave its port and run off the component, so
+      // the two are still visibly connected somewhere out of view.
+      const exitY = Math.max(2, sy - 12);
+      const r = Math.max(2, Math.min(12, (sy - exitY) / 2, (sx + 40) / 2));
+      const d =
+        `M ${sx.toFixed(1)} ${sy.toFixed(1)} ` +
+        `L ${sx.toFixed(1)} ${(exitY + r).toFixed(1)} ` +
+        `Q ${sx.toFixed(1)} ${exitY.toFixed(1)} ${(sx - r).toFixed(1)} ${exitY.toFixed(1)} ` +
+        `L -40 ${exitY.toFixed(1)} ` +
+        `M ${(stageRect.width + 40).toFixed(1)} ${ey.toFixed(1)} ` +
+        `L ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+      cablePath.setAttribute('d', d);
+      cableHighlight.setAttribute('d', d);
+      return;
+    }
     const turnY = sy - 88;
     const cableX = ex + 34;
     const r = Math.min(22, Math.abs(sx - cableX) / 2, Math.abs(ey - turnY) / 2);
@@ -710,7 +680,6 @@ class GBScribeDemo {
       `L ${cableX.toFixed(1)} ${(ey - r).toFixed(1)} ` +
       `Q ${cableX.toFixed(1)} ${ey.toFixed(1)} ${(cableX - r).toFixed(1)} ${ey.toFixed(1)} ` +
       `L ${ex.toFixed(1)} ${ey.toFixed(1)}`;
-    cable.setAttribute('viewBox', `0 0 ${stageRect.width.toFixed(1)} ${stageRect.height.toFixed(1)}`);
     cablePath.setAttribute('d', d);
     cableHighlight.setAttribute('d', d);
   }
@@ -980,7 +949,16 @@ class GBScribeDemo {
   }
 
   createGuideSteps() {
-    return [
+    const steps = [];
+    if (window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
+      steps.push({
+        id: 'rotate',
+        title: 'Turn your phone sideways',
+        body: 'Rotate your phone horizontally to use the GBA. Landscape gives the screen and on-screen controls room to sit side by side, so the console is easier to see and reach.',
+        targets: () => ['.gbs-gba-photo'],
+      });
+    }
+    steps.push(
       {
         id: 'start',
         title: 'Open GBScribe',
@@ -1065,7 +1043,8 @@ class GBScribeDemo {
         body: 'The sheet is now in Printed pages. Use PNG, BMP, PDF, or Print in the export bar to keep it or send it to a real printer.',
         targets: () => ['.gbs-export'],
       },
-    ];
+    );
+    return steps;
   }
 
   async guideTap(action, hold = 90) {
@@ -1653,7 +1632,7 @@ class GBScribeDemo {
     const printer = this.printer;
     const powered = printer.powered;
     const printing = Boolean(printer.printJob);
-    const feeding = printer.feeding;
+    const feeding = Boolean(printer.feeding);
     const paperOut = printer.rollRows <= 0;
     const coverOpen = !printer.coverClosed;
 
@@ -1693,8 +1672,6 @@ class GBScribeDemo {
       this.refs.pilot.classList.add('on');
     }
     this.refs.linkPilot.className = `gbs-pilot ${powered ? 'on' : ''}`.trim();
-    this.refs.printerBody.classList.toggle('is-printing', printing);
-    this.refs.printerBody.classList.toggle('is-feeding', feeding && !printing);
 
     for (const button of this.refs.powerButtons) {
       button.classList.toggle('is-on', powered);
@@ -1775,10 +1752,9 @@ class GBScribeDemo {
   async resetGba(showToast = true) {
     if (!this.gba || !this.romBuffer) return;
     this.releaseAll();
+    this.gba.storeSavedata();
     this.gba.setRom(this.romBuffer);
-    this.gba.sio.attachDevice(this.printer);
-    this.gba.audio.masterVolume = this.muted ? 0 : 0.55;
-    this.gba.audio.pause(false);
+    await this.gba.waitForFrames(90, 6000);
     if (showToast) this.toast('GBA reset. GBScribe is back at the title screen.');
     await sleep(120);
   }
@@ -1796,6 +1772,7 @@ class GBScribeDemo {
   }
 
   destroy() {
+    if (this.destroyed) return;
     this.destroyed = true;
     this.guideActive = false;
     this.unbindGuideKeys();
@@ -1804,6 +1781,8 @@ class GBScribeDemo {
     this.abort.abort();
     this.resizeObserver?.disconnect();
     this.sound.stopMotor();
-    this.gba?.pause();
+    if (typeof this.gba?.shutdown === 'function') this.gba.shutdown();
+    else this.gba?.pause();
+    this.printer?.destroy();
   }
 }

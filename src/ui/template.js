@@ -35,7 +35,6 @@ export function buildTemplate() {
       <path data-cable-path d="M 40 8 C 52 1, 74 1, 87 14 S 100 44, 98 60" />
       <path class="highlight" data-cable-highlight d="M 40 8 C 52 1, 74 1, 87 14 S 100 44, 98 60" />
     </svg>
-    <div class="gbs-link-chip" aria-label="Link Cable connected">${icons.link} Link Cable</div>
     <section class="gbs-gba-column" aria-label="Game Boy Advance running GBScribe">
       <div class="gbs-gba-photo">
         <img class="gbs-gba-image" data-gba-image alt="" draggable="false">
@@ -159,11 +158,14 @@ export function buildTemplate() {
         <li>GBScribe's own save slots live in your browser's localStorage. They survive a reload.</li>
         <li>Powering the printer off makes the GBA report “Printer: disconnected”; that is the ROM's real detection path, not a UI trick.</li>
         <li>The test page is 54 tile rows. GBScribe streams it in 18-row chunks, so you can watch the paper advance chunk by chunk.</li>
-        <li>Nothing is uploaded. The ROM, BIOS, and all processing stay in this page.</li>
+        <li>Nothing is uploaded. The ROM and all processing stay in this page.</li>
       </ul>
       <div class="gbs-legal">
-        GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the MIT License.
-        Emulator core: GBA.js © 2012–2013 Jeffrey Pfau, licensed under the BSD 2-Clause License.
+        GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software,
+        licensed under the <a href="https://github.com/KyberCritter/GBScribe/blob/master/LICENSE.md" target="_blank" rel="noopener">GBScribe MIT License</a>
+        and the <a href="https://github.com/KyberCritter/AdvancePrint/blob/main/LICENSE.md" target="_blank" rel="noopener">AdvancePrint MIT License</a>.
+        Emulator core: mGBA © 2013–2025 Jeffrey Pfau and contributors, licensed under the
+        <a href="https://github.com/mgba-emu/mgba/blob/master/LICENSE" target="_blank" rel="noopener">Mozilla Public License 2.0</a>.
         Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy Advance, and Game Boy Printer are trademarks of Nintendo.
       </div>
     </div>

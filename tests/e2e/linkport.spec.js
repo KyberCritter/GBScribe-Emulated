@@ -4,6 +4,22 @@ import { boot } from './helpers.js';
 test.describe('Reusable GBA.js link port and host controls', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page);
+    await page.evaluate(async () => {
+      const files = [
+        'util.js', 'core.js', 'arm.js', 'thumb.js', 'mmu.js', 'io.js', 'audio.js',
+        'video.js', 'video/proxy.js', 'video/software.js', 'irq.js', 'keypad.js',
+        'sio.js', 'savedata.js', 'gpio.js', 'gba.js',
+      ];
+      for (const file of files) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = `/vendor/gbajs/js/${file}`;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+    });
   });
 
   test('GPIO link port clocks generic devices and exposes SI', async ({ page }) => {

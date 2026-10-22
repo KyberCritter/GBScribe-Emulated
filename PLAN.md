@@ -15,8 +15,8 @@ Prepare the project so it can be added as a section to a personal GitHub Pages b
 - tear by dragging or scissors;
 - export to PNG, BMP, multi-page PDF, or a real printer.
 
-A second goal emerged during development: the GBA.js modifications must be
-packaged so they can be reused in another browser emulator project, such as a
+A second goal emerged during development: the emulator integration must be
+packaged so it can be reused in another browser emulator project, such as a
 GB Camera / GB/GBC emulator that prints to the same printer model.
 
 ## Status
@@ -24,8 +24,8 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | Area | Status |
 | --- | --- |
 | Build GBScribe from upstream `master` | Done (`fb78d59`) |
-| In-browser GBA emulation | Done (GBA.js, BSD-2-Clause) |
-| GPIO link-port shim | Done, stock GBA.js + runtime patch |
+| In-browser GBA emulation | Done (mGBA WebAssembly, MPL-2.0) |
+| GPIO link-port channel | Done, patched core + printer worker |
 | Serial Game Boy Printer | Done |
 | GBA shell + input | Done |
 | Printer shell, power, feed, roll, cover | Done |
@@ -34,14 +34,14 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | Reusable link-port package | Done (`src/linkport/`) |
 | Local persistence and cookie policy | Done, consent-gated |
 | Node unit tests | Done (22) |
-| Playwright feature tests | Done (26) |
+| Playwright feature tests | Done (28) |
 | Blog embedding docs | Done |
 
 ## Requirements trace
 
 | Requirement | Implementation |
 | --- | --- |
-| Preexisting in-browser GBA emulator | GBA.js, vendored stock, BSD-2-Clause |
+| Preexisting in-browser GBA emulator | mGBA, compiled to WebAssembly, MPL-2.0 |
 | GBScribe ROM from main / latest release | Built from `KyberCritter/GBScribe` master at `fb78d59` |
 | GBA around emulated screen | The supplied crimson GBA photo, cut out, with the live screen composited into its display |
 | Clickable / remappable controls | Transparent hit zones over the photo + remappable keyboard bindings |
@@ -51,9 +51,9 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | Tear by drag or scissors | Drag tear tab or paper body; scissors button; gallery |
 | BMP / PNG / PDF / real printer | Hand-written BMP/PDF encoders; canvas PNG; print dialog |
 | GitHub Pages section | Shadow-DOM custom element + iframe fallback |
-| MIT if deps allow | MIT; GBA.js BSD-2; font OFL; no GPL |
+| MIT if deps allow | MIT; mGBA MPL-2.0; font OFL; no GPL |
 | Document work/references | README, PLAN, docs, LICENSES |
-| Guided tutorial | First-load Yes/No prompt; spotlight/labels/arrows; auto-advances Start, mode select, typing, print, tear, and export after each user input; End tutorial and Guide replay controls |
+| Guided tutorial | First-load Yes/No prompt; spotlight/labels/arrows; on phones in portrait recommends rotating to landscape; auto-advances Start, mode select, typing, print, tear, and export after each user input; End tutorial and Guide replay controls |
 | Cookie / storage policy | First-load template with Accept/Reject; states that no data is sent to the server and every feature works without cookies; Privacy settings can reopen it |
 | Local save data | With consent, saves controls, sound, printed pages/current paper, guide completed/skipped state, and the GBScribe FLASH save in local browser storage; rejection clears demo data and disables writes |
 
@@ -68,13 +68,11 @@ Options considered:
 | GBA.js (endrift) | BSD-2-Clause | Small, readable JS core; GPIO stub is easy to replace |
 | NanoBoyAdvance / SkyEmu | GPL / other | License and/or WASM build complexity |
 
-GBA.js won: it is permissively licensed, small enough to audit, runs GBScribe at
-60 fps, and exposes the CPU, MMU, SIO, and VRAM needed by the demo. Its 2013
-accuracy limitations are acceptable for this ROM.
-
-The vendored copy in `vendor/gbajs/` is stock. All changes are installed at
-runtime by `src/linkport/gba-linkport.js`, so the patch is reusable and the
-vendored source stays diff-free.
+mGBA won: it is accurate at 60 fps, MPL-2.0 is file-level copyleft, and its
+WebAssembly platform gives the demo a browser core that can be rebuilt with a
+link-port hook. The core is patched in `sio.c` to call the printer on GPIO clock
+edges and in `main.c` to expose the channel, flash save, and memory reads. The
+build is vendored in `vendor/mgba/`; the printer model stays in JavaScript.
 
 ## ROM provenance
 
@@ -96,11 +94,11 @@ requested main branch and includes the MIT license/protocol cleanup commits.
 ```txt
 GBScribe ROM
     │
-GBA.js CPU / MMU / timers / VRAM
+mGBA CPU / MMU / timers / VRAM (WebAssembly)
     │  RCNT bit 15 = GPIO, bits 0..3 pins, bits 4..7 directions
-    │  rising SCK → device.clock(SO); SI ← device.getSOUT()
+    │  rising SCK → shared channel → clock(SO); SI ← reply
     ▼
-GBPrinterDevice
+GBPrinterDevice (printer worker)
     │  0x88 0x33 packets, checksum, INIT/DATA/PRINT/INQUIRY/BREAK
     │  2bpp 160-dot tile rows, 18-row buffer, margins
     ▼
@@ -112,19 +110,17 @@ PaperStore (281-dot paper strip, 160-dot centered print)
 PaperCanvasView / export encoders / print dialog
 ```
 
-### Link port shim
+### Link-port channel
 
-`installGbaLinkPort()` patches:
+`gbsGpioClock()` in the core calls the printer worker on each SC rising edge and
+returns the SI bit synchronously. The handshake uses a 16-byte shared block in
+the core's memory; the worker runs the printer model and posts its row and
+status events back to the page.
 
-- `GameBoyAdvanceSIO.clear` → preserve the attached device across resets;
-- `attachDevice` / `detachDevice` with lifecycle hooks;
-- `writeRCNT` → detect SC rising edges and call `device.clock`;
-- `readRCNT` → overlay the device's SOUT on the SI bit;
-- `GameBoyAdvanceIO.loadU16` and `load16` → route RCNT reads to the pin model.
-
-It also disables GBA.js's hard-coded keyboard listeners so the host page owns
-input. It is idempotent. The device interface is only
-`clock(mosiBit) -> misoBit` and `getSOUT()`.
+The reusable GBA.js shim is still in `src/linkport/gba-linkport.js` for GBA.js
+projects: `installGbaLinkPort()` patches `sio.clear`, adds
+`attachDevice`/`detachDevice`, overrides `writeRCNT`/`readRCNT`, and routes
+`GameBoyAdvanceIO.loadU16`/`load16` so reads see the SI pin.
 
 ### Byte-level reuse
 
@@ -196,8 +192,8 @@ Implementation notes:
 - The Link Cable starts at the GBA's **top link port** and ends at the
   printer's **right-side port**. The SVG path is measured from the actual DOM
   port rectangles at runtime, so it follows responsive layout.
-- On narrow screens the cable becomes a compact “Link Cable” chip between the
-  stacked devices.
+- On narrow screens the cable is still drawn: each end runs off the component
+  instead of joining the stacked devices directly.
 
 ## Tests
 
@@ -225,8 +221,8 @@ Implementation notes:
 - Reusable GPIO shim with a fake device, SI input, attach/detach, idempotence
 - Key rebinding, on-screen Start, reset defaults
 - Printer via ByteLinkAdapter
-- First-load guide prompt, eight-step auto-driven walkthrough, print/tear/export
-  result, and ending the tutorial early
+- First-load guide prompt, auto-driven walkthrough with a phone-rotation step in
+  portrait, print/tear/export result, and ending the tutorial early
 - Guide completion/skip remembered across reloads
 - First-load cookie policy, accept/reject, rejected writes, and accepted
   restoration of printed pages, current paper, controls, and the GBScribe save

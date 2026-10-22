@@ -11,6 +11,7 @@ test('mobile layout stacks the hardware and the on-screen controls work', async 
     const shadow = document.querySelector('gbscribe-emulator').shadowRoot;
     const gba = shadow.querySelector('[data-gba-image]');
     const printer = shadow.querySelector('[data-printer-image]');
+    const cable = shadow.querySelector('[data-cable]');
     return {
       innerWidth,
       scrollWidth: document.documentElement.scrollWidth,
@@ -18,12 +19,19 @@ test('mobile layout stacks the hardware and the on-screen controls work', async 
       printer: printer.getBoundingClientRect().toJSON(),
       gbaLoaded: gba.complete && gba.naturalWidth > 0,
       printerLoaded: printer.complete && printer.naturalWidth > 0,
+      cableDisplay: getComputedStyle(cable).display,
+      cablePath: shadow.querySelector('[data-cable-path]').getAttribute('d'),
+      hasChip: Boolean(shadow.querySelector('.gbs-link-chip')),
     };
   });
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth + 1);
   expect(layout.gbaLoaded).toBe(true);
   expect(layout.printerLoaded).toBe(true);
   expect(layout.printer.top).toBeGreaterThan(layout.gba.bottom);
+  expect(layout.cableDisplay).not.toBe('none');
+  expect(layout.hasChip).toBe(false);
+  expect(layout.cablePath.match(/M/g)).toHaveLength(2);
+  expect(layout.cablePath).toContain('L -40');
 
   await expect(page.locator('gbscribe-emulator [data-toast]')).not.toHaveClass(/show/);
   await page.locator('gbscribe-emulator [data-button="START"]').click();

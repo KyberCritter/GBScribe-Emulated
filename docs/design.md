@@ -59,8 +59,10 @@ is on the free top edge (scissors are always available).
 
 The cable is an SVG path computed from the real DOM rectangles of the GBA
 top port and printer right port. It leaves the GBA upward, arcs over the gap,
-and enters the printer on its right side. At widths below 1040 px the cable is
-replaced by a compact “Link Cable” chip between the stacked devices.
+and enters the printer on its right side. At widths below 1040 px the devices
+stack, so each end of the cable leaves its port and runs off the component:
+the GBA end exits past the top-left and the printer end past the right side,
+as if the connection continues out of view.
 
 ## Local persistence and consent
 
@@ -82,12 +84,13 @@ gbscribe-emulated.bindings.v1    remapped keyboard controls
 gbscribe-emulated.sound.v1       mute preference
 gbscribe-emulated.guide.v1       completed | skipped
 gbscribe-emulated.pages.v1       detached sheets + current sheet
-com.endrift.gbajs.*              stock GBA.js FLASH save
+com.endrift.gbajs.*              GBScribe FLASH save (shared key)
 ```
 
-The emulator's `storeSavedata` and `retrieveSavedata` methods are wrapped per
-instance. They delegate to GBA.js only after consent, so rejecting storage
-leaves GBScribe saves fully functional in memory but does not persist them.
+The emulator adapter snapshots the live save memory on save updates. It reads
+and writes the browser store only after consent, so rejecting storage leaves
+GBScribe saves fully functional in memory but does not persist them. The save
+key is the same one GBA.js used, so existing saves keep working.
 Rejecting also clears the demo keys and any `com.endrift.gbajs.*` saves.
 
 Paper pages are serialized as JSON with one base64 string per 281-dot row and
@@ -110,14 +113,16 @@ action through the same `pressButton()` path as the on-screen controls, waits
 for the emulator or printer to finish, then reveals the next step. This keeps
 the highlighted controls and the emulated state in sync. The steps are:
 
-1. Start on the title screen.
-2. D-pad selection and A confirmation in the mode chooser.
-3. The writing controls after entering the text editor.
-4. Start to open the document menu.
-5. The **Print document** entry in that menu.
-6. A to confirm the print.
-7. The tear tab and scissors.
-8. The PNG, BMP, PDF, and Print export bar.
+1. On phones in portrait, a suggestion to rotate the device horizontally so the
+   GBA screen and on-screen controls sit side by side.
+2. Start on the title screen.
+3. D-pad selection and A confirmation in the mode chooser.
+4. The writing controls after entering the text editor.
+5. Start to open the document menu.
+6. The **Print document** entry in that menu.
+7. A to confirm the print.
+8. The tear tab and scissors.
+9. The PNG, BMP, PDF, and Print export bar.
 
 **End tutorial** stays in the viewport's top right while the guide is active.
 The guide can be replayed from the header **Guide** button. Embeds can suppress
@@ -127,6 +132,7 @@ the first-load question with the `guide-prompt="false"` attribute, and tests use
 ## Responsive behavior
 
 - Desktop: printer left, GBA right, cable between.
-- Tablet/phone: stacked GBA → Link Cable chip → printer.
+- Tablet/phone: stacked GBA → printer, with the cable running off the top-left
+  and right edges as if connected out of view.
 - The paper remains an overlay on the printer at all sizes; feed/power stay
   outside the paper width.

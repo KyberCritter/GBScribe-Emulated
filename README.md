@@ -10,7 +10,7 @@ By Scott Ratchford — [scottratchford.com](https://scottratchford.com)
 Licensed under the **MIT License** — see [LICENSE.md](LICENSE.md).
 
 ```txt
-GBScribe ROM ── GBA.js CPU / VRAM / timers
+GBScribe ROM ── mGBA CPU / VRAM / timers
                        │
                  RCNT GPIO mode
                  SCK / SO / SI
@@ -25,11 +25,11 @@ GBScribe ROM ── GBA.js CPU / VRAM / timers
 GBScribe is a native GBA homebrew app that bit-bangs the DMG printer protocol
 over the GBA link port in **general-purpose GPIO mode**. Most browser GBA
 emulators do not implement that mode, and none ship a Game Boy Printer. This
-project fills both gaps without forking an emulator:
+project fills both gaps with a browser build of mGBA:
 
-- **GBA.js** (BSD-2-Clause) runs the unmodified GBScribe ROM.
-- A small, reusable **GPIO link-port shim** teaches GBA.js about `RCNT`, clock
-  edges, SI input, and hot-pluggable devices.
+- **mGBA** (MPL-2.0), compiled to WebAssembly, runs the unmodified GBScribe ROM.
+- A small, reusable **GPIO link-port channel** clocks the printer from `RCNT`
+  GPIO mode and exposes its SI replies back to the core.
 - A serial-level **Game Boy Printer** parses the real `0x88 0x33` packet
   protocol, buffers 2bpp tile data, runs the motor, and physically advances
   paper.
@@ -45,7 +45,9 @@ The shells are the supplied hardware photos, cut out for the browser: a
 front-on crimson GBA with a white bezel and white controls, and a front-on
 beige printer with a smoked paper-roll cover, black brand band, and white
 output slot. The printer is on the left, the GBA on the right. The Link Cable leaves
-the **top** of the GBA and enters the **right side** of the printer. Paper feeds
+the **top** of the GBA and enters the **right side** of the printer. On narrow
+screens the devices stack and the cable runs off the edges of the demo, as if
+the connection continues out of view. Paper feeds
 out of the white slot and rises up over the printer, like the real thing. The
 print image is centered on the paper at the ~57% width measured from a real
 Game Boy Camera print.
@@ -70,6 +72,8 @@ Game Boy Camera print.
   export bar in order, with labels and arrows.
 - Performs the highlighted action after each tap, click, or key press, so the
   screen state advances with the instructions instead of ahead of them.
+- On phones held upright, starts by suggesting the device be rotated horizontally
+  so the GBA screen and on-screen controls have room side by side.
 - **End tutorial** stays in the top right while the guide is running. The
   **Guide** button in the header can replay it at any time.
 - Embedders can suppress the first-load prompt with
@@ -115,11 +119,10 @@ Game Boy Camera print.
 - Everything is generated locally; no uploads or services.
 
 ### Reusable link-port layer
-The GBA.js mods and printer model are standalone modules, documented in
-[`docs/linkport.md`](docs/linkport.md). They can be reused in another emulator
-project — for example, a GB Camera / GB/GBC emulator using the
-`ByteLinkAdapter`, or a different GBA front end using
-`installGbaLinkPort()`.
+The emulator adapter, printer worker, and printer model are standalone modules,
+documented in [`docs/linkport.md`](docs/linkport.md). They can be reused in
+another emulator project — for example, a GB Camera / GB/GBC emulator using the
+`ByteLinkAdapter`, or a GBA front end using the shared-memory channel.
 
 Detailed notes: [embedding](docs/integration.md) · [link-port reuse](docs/linkport.md) · [design](docs/design.md) · [testing](docs/testing.md) · [plan](PLAN.md).
 
@@ -241,8 +244,10 @@ cp GBScribe.gba ../../assets/roms/GBScribe.gba
 | Layer | Location | Notes |
 | --- | --- | --- |
 | ROM | `assets/roms/GBScribe.gba` | MIT, built from source |
-| Emulator | `vendor/gbajs/` | Stock GBA.js, BSD-2-Clause |
-| GPIO shim | `src/linkport/gba-linkport.js` | Reusable; no emulator file changes |
+| Emulator | `vendor/mgba/` | mGBA WebAssembly core, MPL-2.0 |
+| Emulator adapter | `src/emulator/mgba-core.js` | ROM/save mounting, keypad, audio, memory reads |
+| GPIO channel | `src/emulator/mgba-core.js`, `vendor/mgba/mgba.js` | `RCNT` clock edges and SI replies |
+| Printer host | `src/printer/printer-worker.js` | Runs the device off the page thread |
 | Byte adapter | `src/linkport/byte-link.js` | GB/GBC serial-register transport |
 | Printer | `src/printer/gb-printer.js` | Serial pins → packets → motor/paper |
 | Paper | `src/printer/paper.js` | 281-dot sheets with centered 160-dot print, renderer, tear model |
@@ -254,6 +259,22 @@ cp GBScribe.gba ../../assets/roms/GBScribe.gba
 The printer's DATA buffer is the real 2bpp tile format: 20 tiles per row, 16
 bytes per tile, 320 bytes per tile row, 5,760 bytes per 18-row GBScribe chunk.
 Shade 0 is paper; 3 is the darkest burn.
+
+### Rebuilding the emulator core
+
+`vendor/mgba/` is a WebAssembly build of mGBA with the link-port channel. The
+source changes are in [`tools/mgba-wasm.patch`](tools/mgba-wasm.patch). To
+rebuild, apply the patch to
+[`thenick775/mgba`](https://github.com/thenick775/mgba) on `feature/wasm`, build
+with the platform's Docker image, and copy `mgba.js` and `mgba.wasm` back into
+`vendor/mgba/`:
+
+```sh
+docker build -t local-mgba/wasm:2.0 mgba/src/platform/wasm/docker
+docker run --rm -v "$PWD/mgba:/home/mgba/src" local-mgba/wasm:2.0
+cp mgba/build-wasm/wasm/mgba.js vendor/mgba/
+cp mgba/build-wasm/wasm/mgba.wasm vendor/mgba/
+```
 
 ## Tests
 
@@ -269,7 +290,7 @@ Konami Easter egg, QR print, drawing print, paper tearing, roll replacement,
 power cycling, exports, rebinding, the guided tour, consent-gated persistence,
 and the reusable GPIO/byte link layers.
 
-The e2e suite has 26 tests; the Node suite has 22. The e2e tests read
+The e2e suite has 28 tests; the Node suite has 22. The e2e tests read
 GBScribe's real BG text map and FLASH save data through the emulator, so
 assertions cover actual ROM state rather than DOM mocks.
 
@@ -282,18 +303,23 @@ src/
   app.js        demo orchestration
   persistence.js  consent-gated local browser storage
   gbscribe-demo.js  custom element entry point
-  linkport/     reusable GBA.js GPIO shim + byte adapter
-  printer/      Game Boy Printer + paper model
+  emulator/     mGBA adapter and link-port channel
+  linkport/     reusable byte-level link adapter
+  printer/      Game Boy Printer, paper model, printer worker
   export/       BMP/PDF/PNG/print
   ui/           template, styles, icons, sound
 tests/          Node tests + Playwright e2e
-vendor/gbajs/   stock GBA.js (BSD-2-Clause)
+vendor/mgba/    mGBA WebAssembly build (MPL-2.0)
+vendor/gbajs/   stock GBA.js for the standalone link-port module (BSD-2-Clause)
 ```
 
 ## Limitations
 
-- GBA.js is a 2013-era emulator; it is good enough for GBScribe but is not a
-  cycle-accurate mGBA replacement.
+- mGBA is accurate for GBScribe's needs, but the browser build trades desktop
+  peripherals for a single GPIO link-port channel and wall-clock printer timing.
+- The demo needs cross-origin isolation (`COOP: same-origin` and
+  `COEP: require-corp`) for its WebAssembly threads. The bundled service worker
+  adds the headers on static hosts that cannot set them.
 - The printer's motor timing is wall-clock based for a pleasant demo, not
   cycle-accurate hardware timing. Serial timing is driven by GBScribe's own
   TM2 delays.
@@ -309,9 +335,9 @@ vendor/gbajs/   stock GBA.js (BSD-2-Clause)
 
 ## Legal
 
-GBScribe and AdvancePrint ? Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the [MIT License](LICENSE.md).
+GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the [GBScribe MIT License](https://github.com/KyberCritter/GBScribe/blob/master/LICENSE.md) and the [AdvancePrint MIT License](https://github.com/KyberCritter/AdvancePrint/blob/main/LICENSE.md).
 
-GBA.js ? 2012?2013 Jeffrey Pfau, licensed under the [BSD 2-Clause License](vendor/gbajs/COPYING).
+mGBA © 2013–2025 Jeffrey Pfau and contributors, licensed under the [Mozilla Public License 2.0](https://github.com/mgba-emu/mgba/blob/master/LICENSE).
 
 Press Start 2P font, SIL Open Font License 1.1; see
 [`assets/fonts/OFL.txt`](assets/fonts/OFL.txt).
@@ -331,7 +357,7 @@ Code” is a registered trademark of DENSO WAVE Incorporated.
    [AdvancePrint](https://github.com/KyberCritter/AdvancePrint) by Scott Ratchford
 2. [Pan Docs — Game Boy Printer](https://gbdev.io/pandocs/Gameboy_Printer.html)
 3. [GBATEK — GBA link port / RCNT](https://problemkaputt.de/gbatek.htm)
-4. [GBA.js](https://github.com/endrift/gbajs) by Jeffrey Pfau
+4. [mGBA](https://github.com/mgba-emu/mgba) by Jeffrey Pfau and contributors
 5. [shonumi — In Depth: The Game Boy Printer](https://shonumi.github.io/articles/art2.html)
 6. [gba-link-connection](https://github.com/afska/gba-link-connection) by afska
 7. [Game Boy Printer on Wikipedia](https://en.wikipedia.org/wiki/Game_Boy_Printer)

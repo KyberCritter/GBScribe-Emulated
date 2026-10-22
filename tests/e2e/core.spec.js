@@ -191,6 +191,50 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await waitForText(page, 'Printer: OK', 8000);
   });
 
+  test('printer image stays still while idle and feeding', async ({ page }) => {
+    const sampleFrames = () =>
+      page.evaluate(async () => {
+        const image = window.__gbsDemo.refs.printerImage;
+        const frames = [];
+        for (let i = 0; i < 12; i++) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          const { x, y } = image.getBoundingClientRect();
+          frames.push(`${x.toFixed(2)},${y.toFixed(2)}`);
+        }
+        return frames;
+      });
+
+    // Repeated refreshes must not animate the printer while it is idle.
+    for (let i = 0; i < 4; i++) {
+      await page.evaluate(() => window.__gbsDemo.updateUI());
+    }
+    expect(new Set(await sampleFrames()).size).toBe(1);
+    expect(await page.evaluate(() => window.__gbsDemo.printer.feeding)).toBe(false);
+
+    // Feeding advances paper through the worker, but the printer body must not move.
+    await page.evaluate(() => window.__gbsDemo.printer.feedRows(24));
+    expect(new Set(await sampleFrames()).size).toBe(1);
+    expect(await page.evaluate(() => window.__gbsDemo.printer.feeding)).toBe(true);
+    await expect
+      .poll(async () => page.evaluate(() => window.__gbsDemo.printer.feeding), { timeout: 8000 })
+      .toBe(false);
+    expect(new Set(await sampleFrames()).size).toBe(1);
+  });
+
+  test('long sheets keep the paper width when the canvas grows', async ({ page }) => {
+    const size = await page.evaluate(async () => {
+      const { PaperCanvasView, PaperSheet } = await import('/src/printer/paper.js');
+      const canvas = document.createElement('canvas');
+      const view = new PaperCanvasView(canvas);
+      const sheet = new PaperSheet();
+      for (let i = 0; i < 600; i++) sheet.append(new Uint8Array(160).fill(i % 4));
+      view.setSheet(sheet);
+      return { width: canvas.width, height: canvas.height };
+    });
+    expect(size.width).toBe(281);
+    expect(size.height).toBe(1024);
+  });
+
   test('PNG, BMP, PDF, and browser print exports are wired to the UI', async ({ page }) => {
     const exportLayout = await page.evaluate(() => {
       const root = document.querySelector('gbscribe-emulator').shadowRoot;
