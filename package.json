@@ -1,0 +1,17 @@
+{
+  "name": "gbscribe-emulated",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "GBScribe + Game Boy Printer in the browser, with GBA.js and a reusable GPIO link-port device layer.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "playwright test",
+    "test:all": "npm test && npm run test:e2e",
+    "serve": "node tests/e2e/server.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

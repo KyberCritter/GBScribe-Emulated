@@ -1,0 +1,136 @@
+import { test, expect } from '@playwright/test';
+import {
+  boot,
+  expectText,
+  openTitleChoice,
+  readSave,
+  resetGba,
+  screenText,
+  tap,
+  waitForPaper,
+  waitForText,
+} from './helpers.js';
+
+test.describe('GBScribe emulator shell and Game Boy Printer', () => {
+  test.beforeEach(async ({ page }) => {
+    await boot(page);
+  });
+
+  test('boots GBScribe and detects the emulated printer', async ({ page }) => {
+    await waitForText(page, 'PRESS START');
+    await waitForText(page, 'Printer: OK');
+    await expect(page.locator('gbscribe-emulator')).toHaveAttribute('data-ready', '');
+    expect(await page.evaluate(() => Boolean(window.__gbsLinkPort?.installed))).toBe(true);
+  });
+
+  test('Try a test print runs GBScribe, prints paper, tears and exports a PNG', async ({ page }) => {
+    await page.locator('gbscribe-emulator [data-action="demo"]').first().click();
+    await waitForPaper(page, 100, 45_000);
+
+    const ink = await page.evaluate(() => window.__gbsTest.paperInk());
+    expect(ink).toBeGreaterThan(0);
+    expect(await page.evaluate(() => window.__gbsTest.paperRows())).toBeGreaterThan(100);
+
+    await page.locator('gbscribe-emulator .gbs-scissors').click();
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.__gbsTest.detached())).toBe(1);
+    await expect(page.locator('gbscribe-emulator [data-pages]')).toBeVisible();
+    await expect(page.locator('gbscribe-emulator .gbs-page-card')).toHaveCount(1);
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('gbscribe-emulator [data-export="png"]').click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/^gbscribe-paper-.*\.png$/);
+  });
+
+  test('paper drag tear, feed, roll replacement, power cycling, and detection', async ({ page }) => {
+    // Synthetic rows let this test focus on the printer body controls.
+    await page.evaluate(() => {
+      const demo = window.__gbsDemo;
+      for (let y = 0; y < 60; y++) demo.paperStore.appendRow(new Uint8Array(160).fill(y % 4));
+    });
+    await expect(page.locator('gbscribe-emulator [data-paper]')).toBeVisible();
+
+    const beforeFeed = await page.evaluate(() => window.__gbsTest.paperRows());
+    await page.locator('gbscribe-emulator [data-action="feed"]').last().click();
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.__gbsTest.paperRows())).toBeGreaterThan(beforeFeed);
+
+    // Drag the paper tab downward to tear it off physically.
+    const rect = await page.evaluate(() => {
+      const demo = window.__gbsDemo;
+      demo.refs.tearTab.scrollIntoView({ block: 'center' });
+      const box = demo.refs.tearTab.getBoundingClientRect();
+      return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    });
+    await page.mouse.move(rect.x, rect.y);
+    await page.mouse.down();
+    await page.mouse.move(rect.x, rect.y + 72, { steps: 8 });
+    await page.mouse.up();
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.__gbsTest.detached())).toBe(1);
+
+    // Paper compartment: open, remove, and insert.
+    await page.locator('gbscribe-emulator [data-action="paper"]').first().click();
+    await expect(page.locator('gbscribe-emulator [data-dialog="paper"]')).toBeVisible();
+    await page.locator('gbscribe-emulator [data-paper-cover]').click();
+    await page.locator('gbscribe-emulator [data-paper-remove]').click();
+    await expect
+      .poll(async () => page.evaluate(() => ({
+        roll: window.__gbsDemo.printer.rollRows,
+        cover: window.__gbsDemo.printer.coverClosed,
+        feedDisabled: window.__gbsDemo.refs.feedButtons.every((button) => button.disabled),
+      })))
+      .toEqual({ roll: 0, cover: false, feedDisabled: true });
+    await page.locator('gbscribe-emulator [data-paper-replace]').click();
+    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer ready');
+    expect(await page.evaluate(() => window.__gbsDemo.printer.rollRows)).toBe(4000);
+    await page.locator('gbscribe-emulator [data-dialog="paper"] [data-close]').first().click();
+
+    // Power off -> the ROM's real INQUIRY path reports disconnected.
+    await page.locator('gbscribe-emulator [data-action="power"]').first().click();
+    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
+    await resetGba(page);
+    await waitForText(page, 'Printer: disconnected', 8000);
+
+    await page.locator('gbscribe-emulator [data-action="power"]').first().click();
+    await waitForText(page, 'Printer: OK', 8000);
+  });
+
+  test('PNG, BMP, PDF, and browser print exports are wired to the UI', async ({ page }) => {
+    await page.evaluate(() => {
+      const demo = window.__gbsDemo;
+      for (let y = 0; y < 30; y++) demo.paperStore.appendRow(new Uint8Array(160).fill((y * 3) % 4));
+      demo.tearPaper();
+    });
+    await page.waitForTimeout(500);
+
+    for (const kind of ['png', 'bmp', 'pdf']) {
+      const downloadPromise = page.waitForEvent('download');
+      await page.locator(`gbscribe-emulator [data-export="${kind}"]`).click();
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toMatch(new RegExp(`\\.${kind}$`));
+      const path = await download.path();
+      expect(path).toBeTruthy();
+      const size = (await import('node:fs')).statSync(path).size;
+      expect(size).toBeGreaterThan(kind === 'pdf' ? 1000 : 500);
+    }
+
+    const popupPromise = page.waitForEvent('popup');
+    await page.locator('gbscribe-emulator [data-export="print"]').click();
+    const popup = await popupPromise;
+    await popup.waitForLoadState('domcontentloaded');
+    await expect(popup.locator('body')).toContainText('GBScribe print');
+    await popup.close();
+  });
+
+  test('title chooser exposes every GBScribe entry point', async ({ page }) => {
+    await resetGba(page);
+    await waitForText(page, 'PRESS START');
+    await tap(page, 'START');
+    await waitForText(page, 'New text document');
+    for (const item of ['New drawing', 'Load a file', 'Print test page', 'Instructions', 'Credits']) {
+      await expectText(page, item);
+    }
+  });
+});

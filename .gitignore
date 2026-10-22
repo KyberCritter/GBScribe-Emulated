@@ -1,0 +1,28 @@
+# Local reference checkouts / scratch work (never committed)
+reference/
+.scratchwork/
+spike/
+.playwright-mcp/
+
+# Test output
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+*.trace.zip
+
+# Root-level local screenshots and exported test artifacts
+/ui-*.png
+/demo-*.png
+/design-*.png
+/power-*.png
+/h2*.png
+/screen-crop.png
+/spike-shot.png
+/test-export.*
+
+# OS / editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.log
