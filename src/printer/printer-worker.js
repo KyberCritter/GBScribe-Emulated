@@ -39,6 +39,7 @@ function snapshot() {
     jobProgress: device.jobProgress,
     jobRowsLeft: device.jobRowsLeft,
     printJob: Boolean(device.printJob),
+    feeding: Boolean(device.feeding),
   };
 }
 
@@ -98,7 +99,11 @@ function pump() {
       }
     }
 
+    const wasFeeding = device.feeding;
     device.update(performance.now());
+    if (device.feeding !== wasFeeding) {
+      self.postMessage({ type: 'state', state: snapshot() });
+    }
 
     if (channel) {
       wait(channel, 0, Atomics.load(channel, 0), 4);

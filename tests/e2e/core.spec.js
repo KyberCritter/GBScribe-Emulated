@@ -191,6 +191,27 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await waitForText(page, 'Printer: OK', 8000);
   });
 
+  test('printer does not shake while idle and stops feeding cleanly', async ({ page }) => {
+    const scene = page.locator('gbscribe-emulator .gbs-printer-scene');
+    await expect(scene).not.toHaveClass(/is-feeding/);
+    expect(await page.evaluate(() => window.__gbsDemo.printer.feeding)).toBe(false);
+
+    // Repeated refreshes must not toggle the animation class with an undefined force.
+    for (let i = 0; i < 4; i++) {
+      await page.evaluate(() => window.__gbsDemo.updateUI());
+    }
+    await expect(scene).not.toHaveClass(/is-feeding/);
+
+    const beforeFeed = await page.evaluate(() => window.__gbsTest.paperRows());
+    await page.evaluate(() => window.__gbsDemo.printer.feedRows(24));
+    await expect(scene).toHaveClass(/is-feeding/, { timeout: 2000 });
+    await expect
+      .poll(async () => page.evaluate(() => window.__gbsDemo.printer.feeding), { timeout: 8000 })
+      .toBe(false);
+    await expect(scene).not.toHaveClass(/is-feeding/);
+    expect(await page.evaluate(() => window.__gbsTest.paperRows())).toBeGreaterThan(beforeFeed);
+  });
+
   test('PNG, BMP, PDF, and browser print exports are wired to the UI', async ({ page }) => {
     const exportLayout = await page.evaluate(() => {
       const root = document.querySelector('gbscribe-emulator').shadowRoot;

@@ -1629,7 +1629,7 @@ class GBScribeDemo {
     const printer = this.printer;
     const powered = printer.powered;
     const printing = Boolean(printer.printJob);
-    const feeding = printer.feeding;
+    const feeding = Boolean(printer.feeding);
     const paperOut = printer.rollRows <= 0;
     const coverOpen = !printer.coverClosed;
 
@@ -1670,7 +1670,7 @@ class GBScribeDemo {
     }
     this.refs.linkPilot.className = `gbs-pilot ${powered ? 'on' : ''}`.trim();
     this.refs.printerBody.classList.toggle('is-printing', printing);
-    this.refs.printerBody.classList.toggle('is-feeding', feeding && !printing);
+    this.refs.printerBody.classList.toggle('is-feeding', Boolean(feeding && !printing));
 
     for (const button of this.refs.powerButtons) {
       button.classList.toggle('is-on', powered);

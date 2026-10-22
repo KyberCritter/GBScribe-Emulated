@@ -10,9 +10,9 @@ The Game Boy Printer support is split into these reusable pieces:
 | Printer device | [`../src/printer/gb-printer.js`](../src/printer/gb-printer.js) | Serial-level Game Boy Printer: packets, checksums, status, 2bpp buffer, paper, motor timing. |
 | Byte transport | [`../src/linkport/byte-link.js`](../src/linkport/byte-link.js) | Adapters for emulators that expose an 8-bit serial register instead of individual clock edges. |
 
-All of these are plain JavaScript with no app-specific imports. They are MIT
-licensed, so they can be copied into another emulator project independently of
-the GBScribe UI.
+The printer and transport modules are plain JavaScript with no app-specific
+imports. They are MIT licensed, so they can be copied into another emulator
+project independently of the GBScribe UI.
 
 ## 0. mGBA browser core
 
