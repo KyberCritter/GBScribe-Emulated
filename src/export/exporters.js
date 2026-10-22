@@ -10,7 +10,7 @@
 
 import { GRAY_SHADES, PAPER_WIDTH, renderSheetRgba, renderSheetToCanvas } from '../printer/paper.js';
 
-const MM_PER_DOT = 38 / 160; // 38 mm paper, 160 dots across
+const MM_PER_DOT = 38 / PAPER_WIDTH; // 38 mm paper, 281 dots across
 const PT_PER_MM = 72 / 25.4;
 const PAGE_WIDTH_PT = 38 * PT_PER_MM;
 

@@ -43,6 +43,14 @@ test('PDF is a multi-page 160-dot document with 2-bit grayscale images', () => {
   assert.match(text, /startxref\n\d+\n%%EOF/);
 });
 
+test('PDF page height matches the 281-dot paper aspect', () => {
+  const pdf = encodePdf([makeSheet(PAPER_WIDTH, 3)]);
+  const text = new TextDecoder('latin1').decode(pdf);
+  const box = text.match(/\/MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/);
+  assert.ok(box);
+  assert.ok(Math.abs(Number(box[1]) - Number(box[2])) < 0.01);
+});
+
 test('PDF refuses an empty export', () => {
   assert.throws(() => encodePdf([]), /No printed sheets/);
 });

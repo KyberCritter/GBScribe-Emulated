@@ -221,6 +221,20 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     expect(new Set(await sampleFrames()).size).toBe(1);
   });
 
+  test('long sheets keep the paper width when the canvas grows', async ({ page }) => {
+    const size = await page.evaluate(async () => {
+      const { PaperCanvasView, PaperSheet } = await import('/src/printer/paper.js');
+      const canvas = document.createElement('canvas');
+      const view = new PaperCanvasView(canvas);
+      const sheet = new PaperSheet();
+      for (let i = 0; i < 600; i++) sheet.append(new Uint8Array(160).fill(i % 4));
+      view.setSheet(sheet);
+      return { width: canvas.width, height: canvas.height };
+    });
+    expect(size.width).toBe(281);
+    expect(size.height).toBe(1024);
+  });
+
   test('PNG, BMP, PDF, and browser print exports are wired to the UI', async ({ page }) => {
     const exportLayout = await page.evaluate(() => {
       const root = document.querySelector('gbscribe-emulator').shadowRoot;

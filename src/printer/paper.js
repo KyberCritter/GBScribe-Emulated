@@ -353,7 +353,7 @@ export class PaperCanvasView {
     const context = replacement.getContext('2d');
     context.imageSmoothingEnabled = false;
     context.drawImage(old, 0, 0);
-    this.canvas.width = next;
+    this.canvas.width = PAPER_WIDTH;
     this.canvas.height = next;
     this.context = this.canvas.getContext('2d');
     this.context.imageSmoothingEnabled = false;
