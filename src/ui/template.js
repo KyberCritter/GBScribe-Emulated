@@ -158,11 +158,11 @@ export function buildTemplate() {
         <li>GBScribe's own save slots live in your browser's localStorage. They survive a reload.</li>
         <li>Powering the printer off makes the GBA report “Printer: disconnected”; that is the ROM's real detection path, not a UI trick.</li>
         <li>The test page is 54 tile rows. GBScribe streams it in 18-row chunks, so you can watch the paper advance chunk by chunk.</li>
-        <li>Nothing is uploaded. The ROM, BIOS, and all processing stay in this page.</li>
+        <li>Nothing is uploaded. The ROM and all processing stay in this page.</li>
       </ul>
       <div class="gbs-legal">
         GBScribe and AdvancePrint © Scott Ratchford 2026. GBScribe and AdvancePrint are free software, licensed under the MIT License.
-        Emulator core: GBA.js © 2012–2013 Jeffrey Pfau, licensed under the BSD 2-Clause License.
+        Emulator core: mGBA © 2013–2025 Jeffrey Pfau and contributors, licensed under the Mozilla Public License 2.0.
         Not affiliated with, endorsed by, or sponsored by Nintendo. Game Boy, Game Boy Advance, and Game Boy Printer are trademarks of Nintendo.
       </div>
     </div>
