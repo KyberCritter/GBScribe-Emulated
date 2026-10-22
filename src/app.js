@@ -191,6 +191,9 @@ class GBScribeDemo {
     requestAnimationFrame(() => this.layoutCable());
     setTimeout(() => this.layoutCable(), 350);
     setTimeout(() => this.layoutCable(), 1200);
+    window.addEventListener('pagehide', (event) => {
+      if (!event.persisted) this.destroy();
+    });
   }
 
   queryRefs() {
@@ -1753,6 +1756,7 @@ class GBScribeDemo {
     this.releaseAll();
     this.gba.storeSavedata();
     this.gba.setRom(this.romBuffer);
+    await this.gba.waitForFrames(90, 6000);
     if (showToast) this.toast('GBA reset. GBScribe is back at the title screen.');
     await sleep(120);
   }
@@ -1770,6 +1774,7 @@ class GBScribeDemo {
   }
 
   destroy() {
+    if (this.destroyed) return;
     this.destroyed = true;
     this.guideActive = false;
     this.unbindGuideKeys();
@@ -1778,7 +1783,8 @@ class GBScribeDemo {
     this.abort.abort();
     this.resizeObserver?.disconnect();
     this.sound.stopMotor();
-    this.gba?.pause();
+    if (typeof this.gba?.shutdown === 'function') this.gba.shutdown();
+    else this.gba?.pause();
     this.printer?.destroy();
   }
 }

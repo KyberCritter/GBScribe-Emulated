@@ -133,6 +133,7 @@ export class PrinterLink {
   update() {}
 
   destroy() {
+    if (!this.worker) return;
     this.worker.terminate();
     this.worker = null;
   }

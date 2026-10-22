@@ -112,8 +112,15 @@ export async function createGbaEmulator(options) {
     if (bytes && bytes.length) module.FS.writeFile(SAVE_PATH, bytes);
   };
 
+  let frames = 0;
+
   const registerCallbacks = () => {
-    module.addCoreCallbacks({ saveDataUpdatedCallback: persistSave });
+    module.addCoreCallbacks({
+      saveDataUpdatedCallback: persistSave,
+      videoFrameEndedCallback: () => {
+        frames++;
+      },
+    });
   };
 
   let volume = options.muted ? 0 : 0.55;
@@ -165,15 +172,35 @@ export async function createGbaEmulator(options) {
       flushSaveToFs();
       module._gbsGpioSetEnabled(1);
       module._gbsUseFlash1M();
+      frames = 0;
       if (!module.loadGame(ROM_PATH, SAVE_PATH)) {
         throw new Error('The GBScribe ROM could not be loaded');
       }
       module.setVolume(volume);
       registerCallbacks();
     },
+    waitForFrames(count, timeout = 5000) {
+      const target = frames + count;
+      return new Promise((resolve) => {
+        const deadline = performance.now() + timeout;
+        const check = () => {
+          if (frames >= target || performance.now() >= deadline) resolve();
+          else setTimeout(check, 16);
+        };
+        check();
+      });
+    },
     storeSavedata: persistSave,
     pause() {
       module.pauseGame();
+    },
+    shutdown() {
+      try {
+        module.pauseGame();
+        module.quitMgba();
+      } catch {
+        // The runtime may already be tearing down.
+      }
     },
   };
 
