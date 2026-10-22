@@ -191,25 +191,34 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await waitForText(page, 'Printer: OK', 8000);
   });
 
-  test('printer does not shake while idle and stops feeding cleanly', async ({ page }) => {
-    const scene = page.locator('gbscribe-emulator .gbs-printer-scene');
-    await expect(scene).not.toHaveClass(/is-feeding/);
-    expect(await page.evaluate(() => window.__gbsDemo.printer.feeding)).toBe(false);
+  test('printer image stays still while idle and feeding', async ({ page }) => {
+    const sampleFrames = () =>
+      page.evaluate(async () => {
+        const image = window.__gbsDemo.refs.printerImage;
+        const frames = [];
+        for (let i = 0; i < 12; i++) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          const { x, y } = image.getBoundingClientRect();
+          frames.push(`${x.toFixed(2)},${y.toFixed(2)}`);
+        }
+        return frames;
+      });
 
-    // Repeated refreshes must not toggle the animation class with an undefined force.
+    // Repeated refreshes must not animate the printer while it is idle.
     for (let i = 0; i < 4; i++) {
       await page.evaluate(() => window.__gbsDemo.updateUI());
     }
-    await expect(scene).not.toHaveClass(/is-feeding/);
+    expect(new Set(await sampleFrames()).size).toBe(1);
+    expect(await page.evaluate(() => window.__gbsDemo.printer.feeding)).toBe(false);
 
-    const beforeFeed = await page.evaluate(() => window.__gbsTest.paperRows());
+    // Feeding advances paper through the worker, but the printer body must not move.
     await page.evaluate(() => window.__gbsDemo.printer.feedRows(24));
-    await expect(scene).toHaveClass(/is-feeding/, { timeout: 2000 });
+    expect(new Set(await sampleFrames()).size).toBe(1);
+    expect(await page.evaluate(() => window.__gbsDemo.printer.feeding)).toBe(true);
     await expect
       .poll(async () => page.evaluate(() => window.__gbsDemo.printer.feeding), { timeout: 8000 })
       .toBe(false);
-    await expect(scene).not.toHaveClass(/is-feeding/);
-    expect(await page.evaluate(() => window.__gbsTest.paperRows())).toBeGreaterThan(beforeFeed);
+    expect(new Set(await sampleFrames()).size).toBe(1);
   });
 
   test('PNG, BMP, PDF, and browser print exports are wired to the UI', async ({ page }) => {

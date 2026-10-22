@@ -1672,8 +1672,6 @@ class GBScribeDemo {
       this.refs.pilot.classList.add('on');
     }
     this.refs.linkPilot.className = `gbs-pilot ${powered ? 'on' : ''}`.trim();
-    this.refs.printerBody.classList.toggle('is-printing', printing);
-    this.refs.printerBody.classList.toggle('is-feeding', Boolean(feeding && !printing));
 
     for (const button of this.refs.powerButtons) {
       button.classList.toggle('is-on', powered);

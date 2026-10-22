@@ -393,13 +393,6 @@ export function buildStyles() {
   pointer-events: none;
   filter: drop-shadow(0 30px 34px #3d332266);
 }
-.gbs-printer-scene.is-printing .gbs-printer-image { animation: gbs-print-shake .18s linear infinite; }
-.gbs-printer-scene.is-feeding .gbs-printer-image { animation: gbs-print-shake .24s linear infinite; }
-@keyframes gbs-print-shake {
-  0%, 100% { transform: translate(0, 0) rotate(0); }
-  25% { transform: translate(.4px, -.3px) rotate(.015deg); }
-  75% { transform: translate(-.3px, .4px) rotate(-.015deg); }
-}
 
 .gbs-hit-cover {
   left: 14%;

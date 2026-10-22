@@ -61,7 +61,8 @@ through the persistence format.
 - guided test print, paper rendering, tear, PNG download, and per-page delete
 - drag-to-tear, feed hit-zone alignment, hold-to-feed without text selection,
   roll replacement, cover, power cycle + disconnection
-- printer shake animation stays off while idle and is cleared when a feed finishes
+- printer image stays still while idle and feeding; feeding state still reports
+  correctly and clears when the feed finishes
 - PNG/BMP/PDF downloads and browser print popup
 - title menu inventory
 
