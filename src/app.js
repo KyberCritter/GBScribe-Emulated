@@ -886,7 +886,7 @@ class GBScribeDemo {
       {
         id: 'start',
         title: 'Open GBScribe',
-        body: 'Press Start on the GBA to open the GBScribe menu. The guide will press it for you when you continue.',
+        body: 'Press Start on the GBA to open the GBScribe menu.',
         targets: () => ['[data-button="START"]'],
         advance: async () => {
           await this.guideTap('START');
@@ -896,7 +896,7 @@ class GBScribeDemo {
       {
         id: 'mode',
         title: 'Choose a mode',
-        body: 'Use Up and Down to choose Text or Drawing, then press A to confirm. The guide will choose New text document.',
+        body: 'Use Up and Down to choose Text or Drawing, then press A to confirm.',
         targets: () => ['.gbs-dpad-photo', '.gbs-hit-a'],
         advance: async () => {
           await this.guideTap('DOWN');
@@ -910,7 +910,7 @@ class GBScribeDemo {
       {
         id: 'writing',
         title: 'Writing controls',
-        body: 'The D-pad moves around the keyboard, A types the selected key, B backspaces, and Start opens the menu. The guide will type a character for you.',
+        body: 'The D-pad moves around the keyboard, A types the selected key, B backspaces, and Start opens the menu.',
         targets: () => ['.gbs-gba-photo'],
         advance: async () => {
           await this.guideTap('A');
@@ -920,7 +920,7 @@ class GBScribeDemo {
       {
         id: 'print-menu',
         title: 'Find Print',
-        body: 'Open the menu with Start, then choose Print document. The guide will do both for you.',
+        body: 'Open the menu with Start, then choose Print document.',
         targets: () => ['[data-button="START"]'],
         advance: async () => {
           await this.guideTap('START');
@@ -932,7 +932,7 @@ class GBScribeDemo {
       {
         id: 'print-option',
         title: 'Print document',
-        body: 'This is the print option in the GBScribe menu. The guide will select it and open the print confirmation.',
+        body: 'This is the print option in the GBScribe menu. Select it to open the print confirmation.',
         targets: () => [this.guideScreenRect(8, 6, 17, 1.35)],
         advance: async () => {
           await this.guideTap('A');
@@ -942,7 +942,7 @@ class GBScribeDemo {
       {
         id: 'printing',
         title: 'Print the page',
-        body: 'The guide will press A to confirm. GBScribe sends the page to the printer; paper feeds up out of the white slot.',
+        body: 'GBScribe sends the page to the printer; paper feeds up out of the white slot.',
         targets: () => ['.gbs-hit-a'],
         advance: async (run) => {
           const baselineRows = this.paperStore.current.rowCount;
@@ -953,7 +953,7 @@ class GBScribeDemo {
       {
         id: 'tear',
         title: 'Tear off the sheet',
-        body: 'Drag the paper up or use the scissors to cut the sheet off. The guide will cut this one for you.',
+        body: 'Drag the paper up or use the scissors to cut the sheet off.',
         targets: () => ['.gbs-scissors', '.gbs-tear-tab'],
         advance: async () => {
           await sleep(700);

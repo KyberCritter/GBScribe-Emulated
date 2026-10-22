@@ -237,7 +237,7 @@ export function buildTemplate() {
       <h3>Would you like to view a guide?</h3>
     </div>
     <div class="gbs-dialog-body">
-      <p>The guide walks through starting GBScribe, choosing a mode, writing, printing, tearing the paper off, and exporting the sheet. At each step it highlights the controls and, after your tap, click, or key press, performs the action for you.</p>
+      <p>The guide walks through starting GBScribe, choosing a mode, writing, printing, tearing the paper off, and exporting the sheet. At each step it highlights the controls and waits for your tap, click, or key press.</p>
     </div>
     <div class="gbs-dialog-footer">
       <button class="gbs-btn" data-guide-no type="button">No thanks</button>
