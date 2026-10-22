@@ -1,13 +1,16 @@
 /**
  * GBScribe × Game Boy Printer — demo orchestration.
  *
- * Mounts the device UI, boots the GBScribe ROM in GBA.js, plugs the emulated
- * printer into the GBA's GPIO link port, and wires the paper/export UI.
+ * Mounts the device UI, boots the GBScribe ROM in the mGBA browser core, plugs
+ * the emulated printer into the GBA's GPIO link port, and wires the paper/export
+ * UI.
  *
  * MIT License. See LICENSE.md.
  */
 
-import { GBPrinterDevice, PAPER_FULL_ROLL_ROWS, STATUS } from './printer/gb-printer.js';
+import { PAPER_FULL_ROLL_ROWS } from './printer/gb-printer.js';
+import { PrinterLink } from './printer/printer-link.js';
+import { createGbaEmulator, romGameCode, SAVE_PREFIX } from './emulator/mgba-core.js';
 import { PaperStore, PaperCanvasView, PaperSheet, PAPER_WIDTH, renderSheetToCanvas } from './printer/paper.js';
 import {
   downloadBlob,
@@ -21,7 +24,6 @@ import { buildTemplate } from './ui/template.js';
 import { buildStyles } from './ui/styles.js';
 import { icons } from './ui/icons.js';
 import { SoundBoard } from './ui/sound.js';
-import { installGbaLinkPort } from './linkport/gba-linkport.js';
 import {
   LocalStore,
   BINDINGS_KEY,
@@ -57,54 +59,8 @@ const DEFAULT_BINDINGS = {
 };
 
 const MM_PER_DOT = 38 / 160;
-const VENDOR_SCRIPTS = [
-  'util.js',
-  'core.js',
-  'arm.js',
-  'thumb.js',
-  'mmu.js',
-  'io.js',
-  'audio.js',
-  'video.js',
-  'video/proxy.js',
-  'video/software.js',
-  'irq.js',
-  'keypad.js',
-  'sio.js',
-  'savedata.js',
-  'gpio.js',
-  'gba.js',
-];
-
-let vendorLoader = null;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.async = false;
-    script.dataset.gbsVendor = 'true';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Could not load ${src}`));
-    document.head.appendChild(script);
-  });
-}
-
-async function ensureVendor(baseUrl) {
-  if (typeof window !== 'undefined' && window.GameBoyAdvance) return;
-  if (!vendorLoader) {
-    vendorLoader = (async () => {
-      const base = String(baseUrl).replace(/\/?$/, '/');
-      for (const file of VENDOR_SCRIPTS) {
-        await loadScript(base + file);
-      }
-      if (!window.GameBoyAdvance) throw new Error('GBA.js did not initialise');
-    })();
-  }
-  await vendorLoader;
-}
 
 async function fetchBuffer(url) {
   const response = await fetch(url, { cache: 'force-cache' });
@@ -219,7 +175,7 @@ class GBScribeDemo {
     this.sound = new SoundBoard({ muted: this.muted });
     this.paperStore = new PaperStore({ onChange: (type, sheet, store) => this.onPaperChange(type, sheet, store) });
     this.paperView = new PaperCanvasView(this.refs.paperCanvas, { scale: 2 });
-    this.printer = new GBPrinterDevice({
+    this.printer = new PrinterLink({
       onEvent: (event) => this.onPrinterEvent(event),
       printSpeed: 50,
       feedSpeed: 32,
@@ -354,11 +310,6 @@ class GBScribeDemo {
   async boot() {
     this.renderBindings();
     this.renderPages();
-    await ensureVendor(
-      this.options.vendorBase ||
-        new URL('../vendor/gbajs/js/', import.meta.url).href,
-    );
-    this.linkPort = installGbaLinkPort();
     await this.loadEmulator();
   }
 
@@ -366,36 +317,35 @@ class GBScribeDemo {
     const romUrl =
       this.options.romUrl ||
       new URL('../assets/roms/GBScribe.gba', import.meta.url).href;
-    const biosUrl =
-      this.options.biosUrl ||
-      new URL('../vendor/gbajs/resources/bios.bin', import.meta.url).href;
-    const [bios, rom] = await Promise.all([fetchBuffer(biosUrl), fetchBuffer(romUrl)]);
-    if (!window.GameBoyAdvance) throw new Error('GBA.js is unavailable');
+    const rom = await fetchBuffer(romUrl);
+    const saveKey = `${SAVE_PREFIX}${romGameCode(rom)}`;
+    const storage = this.store.storage;
 
-    const gba = new window.GameBoyAdvance();
-    gba.logLevel = gba.LOG_ERROR | gba.LOG_WARN;
-    gba.setLogger((level, message) => {
-      if (level <= gba.LOG_WARN) console.warn('[GBScribe]', message);
+    const gba = await createGbaEmulator({
+      canvas: this.refs.screen,
+      rom,
+      printer: this.printer,
+      muted: this.muted,
+      readSave: () => {
+        if (!this.store.accepted) return null;
+        try {
+          return storage?.getItem(saveKey) || null;
+        } catch {
+          return null;
+        }
+      },
+      writeSave: (value) => {
+        if (!this.store.accepted) return;
+        try {
+          storage?.setItem(saveKey, value);
+        } catch {
+          // Storage can be unavailable in private modes.
+        }
+      },
     });
-    const retrieveSavedata = gba.retrieveSavedata.bind(gba);
-    gba.retrieveSavedata = () => (this.store.accepted ? retrieveSavedata() : false);
-    const storeSavedata = gba.storeSavedata.bind(gba);
-    gba.storeSavedata = () => {
-      if (this.store.accepted) storeSavedata();
-    };
-    gba.setCanvasDirect(this.refs.screen);
-    gba.setBios(bios);
-    if (!gba.setRom(rom)) throw new Error('The GBScribe ROM could not be loaded');
-
-    // The printer is a device on the general-purpose link port. It survives
-    // sio.clear(), but attaching again is harmless and explicit.
-    gba.sio.attachDevice(this.printer);
-    gba.audio.masterVolume = this.muted ? 0 : 0.55;
-    gba.audio.pause(false);
 
     this.gba = gba;
     this.romBuffer = rom;
-    gba.runStable();
     this.loaded = true;
     this.refs.gbaPower?.classList.add('on');
     await sleep(650);
@@ -1801,10 +1751,8 @@ class GBScribeDemo {
   async resetGba(showToast = true) {
     if (!this.gba || !this.romBuffer) return;
     this.releaseAll();
+    this.gba.storeSavedata();
     this.gba.setRom(this.romBuffer);
-    this.gba.sio.attachDevice(this.printer);
-    this.gba.audio.masterVolume = this.muted ? 0 : 0.55;
-    this.gba.audio.pause(false);
     if (showToast) this.toast('GBA reset. GBScribe is back at the title screen.');
     await sleep(120);
   }
@@ -1831,5 +1779,6 @@ class GBScribeDemo {
     this.resizeObserver?.disconnect();
     this.sound.stopMotor();
     this.gba?.pause();
+    this.printer?.destroy();
   }
 }
