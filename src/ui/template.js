@@ -24,6 +24,7 @@ export function buildTemplate() {
     </div>
     <div class="gbs-header-actions">
       <button class="gbs-btn is-primary" data-action="demo" type="button">${icons.sparkle}<span>Try a test print</span></button>
+      <button class="gbs-btn" data-action="guide" type="button">${icons.sparkle}<span>Guide</span></button>
       <button class="gbs-btn" data-action="help" type="button">${icons.help}<span>How it works</span></button>
       <button class="gbs-btn" data-action="controls" type="button">${icons.gamepad}<span>Controls</span></button>
     </div>
@@ -230,5 +231,31 @@ export function buildTemplate() {
       <button class="gbs-btn" data-close type="button">Close</button>
     </div>
   </dialog>
+
+  <dialog class="gbs-dialog gbs-guide-intro" data-dialog="guide-intro" aria-label="View guide">
+    <div class="gbs-dialog-head">
+      <h3>Would you like to view a guide?</h3>
+    </div>
+    <div class="gbs-dialog-body">
+      <p>The guide walks through starting GBScribe, choosing a mode, writing, printing, tearing the paper off, and exporting the sheet. At each step it highlights the controls and, after your tap, click, or key press, performs the action for you.</p>
+    </div>
+    <div class="gbs-dialog-footer">
+      <button class="gbs-btn" data-guide-no type="button">No thanks</button>
+      <span class="gbs-spacer"></span>
+      <button class="gbs-btn is-primary" data-guide-yes type="button">${icons.sparkle}<span>Yes, show me</span></button>
+    </div>
+  </dialog>
+
+  <div class="gbs-guide" data-guide hidden role="dialog" aria-label="Guided tutorial" aria-live="polite">
+    <div class="gbs-guide-hole" data-guide-hole></div>
+    <div class="gbs-guide-rings" data-guide-rings></div>
+    <div class="gbs-guide-callout" data-guide-callout data-placement="below">
+      <strong data-guide-title></strong>
+      <span data-guide-body></span>
+      <em data-guide-hint>Tap anywhere to continue</em>
+      <i class="gbs-guide-arrow" aria-hidden="true"></i>
+    </div>
+    <button class="gbs-guide-end" data-guide-end type="button">End tutorial</button>
+  </div>
 </div>`;
 }

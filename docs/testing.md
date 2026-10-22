@@ -65,6 +65,17 @@ types for `.gba`, `.woff2`, and ES modules.
 - Resume and Drawing mode routing
 - mobile layout: stacking, no overflow, image loading, on-screen Start
 
+`tests/e2e/guide.spec.js`
+
+- first-load **Would you like to view a guide?** prompt and Yes/No choice
+- eight-step tour: Start, mode select, writing controls, menu print entry,
+  print confirmation, paper, tear, and export
+- each step waits for a click or key press before the guide performs the
+  highlighted action and moves on
+- the tutorial prints and tears a real sheet, then leaves the export controls
+  enabled
+- **End tutorial** stops the overlay and leaves the demo usable
+
 `tests/e2e/linkport.spec.js`
 
 - GPIO shim with a fake device: clock count, SOUT → SI, attach/detach,

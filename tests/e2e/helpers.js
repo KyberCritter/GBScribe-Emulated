@@ -148,7 +148,8 @@ function pathTo(keys, start, target) {
 }
 
 export async function boot(page, path = '/', powerOn = true) {
-  await page.goto(path);
+  const target = /[?&]guide=/.test(path) ? path : `${path}${path.includes('?') ? '&' : '?'}guide=0`;
+  await page.goto(target);
   await page.waitForFunction(() => window.__gbsDemo?.loaded === true, null, { timeout: 30_000 });
   await page.evaluate(() => {
     const readText = () => {

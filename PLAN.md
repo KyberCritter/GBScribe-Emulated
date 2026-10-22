@@ -33,7 +33,7 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | PNG / BMP / PDF / print | Done |
 | Reusable link-port package | Done (`src/linkport/`) |
 | Node unit tests | Done (18) |
-| Playwright feature tests | Done (17) |
+| Playwright feature tests | Done (20) |
 | Blog embedding docs | Done |
 
 ## Requirements trace
@@ -52,6 +52,7 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | GitHub Pages section | Shadow-DOM custom element + iframe fallback |
 | MIT if deps allow | MIT; GBA.js BSD-2; font OFL; no GPL |
 | Document work/references | README, PLAN, docs, LICENSES |
+| Guided tutorial | First-load Yes/No prompt; spotlight/labels/arrows; auto-advances Start, mode select, typing, print, tear, and export after each user input; End tutorial and Guide replay controls |
 
 ## Emulator and license choice
 
@@ -221,6 +222,8 @@ Implementation notes:
 - Reusable GPIO shim with a fake device, SI input, attach/detach, idempotence
 - Key rebinding, on-screen Start, reset defaults
 - Printer via ByteLinkAdapter
+- First-load guide prompt, eight-step auto-driven walkthrough, print/tear/export
+  result, and ending the tutorial early
 
 The tests read the ROM's BG text map and FLASH save data through the emulator,
 not DOM mocks.

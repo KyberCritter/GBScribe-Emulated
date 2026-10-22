@@ -59,6 +59,20 @@ Game Boy Camera print.
 - Keyboard controls, fully remappable and stored in `localStorage`.
 - GBA saves (GBScribe's FLASH1M save slots) persist in the browser.
 - Guided **Try a test print** button.
+- A first-load guide that can walk through the whole app, plus a **Guide** button
+  to replay it.
+
+### Guided tour
+- On first load, asks **"Would you like to view a guide?"** with Yes/No choices.
+- Highlights Start, the D-pad and A button, the writing controls, the
+  **Print document** menu entry, the printer, the tear controls, and the
+  export bar in order, with labels and arrows.
+- Performs the highlighted action after each tap, click, or key press, so the
+  screen state advances with the instructions instead of ahead of them.
+- **End tutorial** stays in the top right while the guide is running. The
+  **Guide** button in the header can replay it at any time.
+- Embedders can suppress the first-load prompt with
+  `guide-prompt="false"` or `?guide=0`.
 
 ### Game Boy Printer
 - Serial-level GPIO emulation: SCK rising edges, SOUT/SI, pull-ups.
@@ -234,9 +248,10 @@ npm run test:all
 The Playwright suite boots GBScribe, detects the printer, exercises the text
 editor, drawing tools, saves, settings, credits, legal page, instructions,
 Konami Easter egg, QR print, drawing print, paper tearing, roll replacement,
-power cycling, exports, rebinding, and the reusable GPIO/byte link layers.
+power cycling, exports, rebinding, the guided tour, and the reusable GPIO/byte
+link layers.
 
-The e2e suite has 17 tests; the Node suite has 18. The e2e tests read
+The e2e suite has 20 tests; the Node suite has 18. The e2e tests read
 GBScribe's real BG text map and FLASH save data through the emulator, so
 assertions cover actual ROM state rather than DOM mocks.
 

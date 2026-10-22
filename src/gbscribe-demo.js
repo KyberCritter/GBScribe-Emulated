@@ -2,6 +2,8 @@ import { mountDemo } from './app.js';
 
 const asset = (path) => new URL(`../${path}`, import.meta.url).href;
 
+const isOff = (value) => /^(false|0|no|off)$/i.test(value || '');
+
 class GBScribeEmulator extends HTMLElement {
   connectedCallback() {
     if (this._demo) return;
@@ -12,6 +14,7 @@ class GBScribeEmulator extends HTMLElement {
       fontUrl: this.getAttribute('font-url') || asset('assets/fonts/PressStart2P-Regular.woff2'),
       gbaImageUrl: this.getAttribute('gba-image') || asset('assets/img/gba.webp'),
       printerImageUrl: this.getAttribute('printer-image') || asset('assets/img/printer.webp'),
+      guidePrompt: !isOff(this.getAttribute('guide-prompt')),
     });
     this.setAttribute('data-ready', '');
     window.__gbsDemo = this._demo;
@@ -32,7 +35,7 @@ if (!customElements.get('gbscribe-emulator')) {
 const placeholder = document.getElementById('gbscribe-demo');
 if (placeholder && placeholder.tagName !== 'GBSCRIBE-EMULATOR') {
   const element = document.createElement('gbscribe-emulator');
-  for (const attribute of ['rom-url', 'bios-url', 'vendor-base', 'font-url', 'gba-image', 'printer-image']) {
+  for (const attribute of ['rom-url', 'bios-url', 'vendor-base', 'font-url', 'gba-image', 'printer-image', 'guide-prompt']) {
     if (placeholder.hasAttribute(attribute)) element.setAttribute(attribute, placeholder.getAttribute(attribute));
   }
   placeholder.replaceWith(element);

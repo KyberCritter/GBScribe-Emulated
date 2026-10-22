@@ -35,6 +35,10 @@ You can skip the placeholder and use the element directly:
         src="/assets/gbscribe-emulated/src/gbscribe-demo.js"></script>
 ```
 
+The first-load guide question can be skipped per embed with
+`guide-prompt="false"`. A page can also append `?guide=0` to its URL. Users can
+still replay the tour from the **Guide** button.
+
 Supported attributes:
 
 | Attribute | Default |
@@ -43,6 +47,7 @@ Supported attributes:
 | `bios-url` | `../vendor/gbajs/resources/bios.bin` |
 | `vendor-base` | `../vendor/gbajs/js/` |
 | `font-url` | `../assets/fonts/PressStart2P-Regular.woff2` |
+| `guide-prompt` | `true`; set to `false` to skip the first-load guide question |
 
 ## Option B — iframe
 

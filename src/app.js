@@ -212,6 +212,13 @@ class GBScribeDemo {
     this.followPaper = true;
     this.viewSheetId = null;
     this.toastTimer = null;
+    this.guideActive = false;
+    this.guideReady = false;
+    this.guideRunId = 0;
+    this.guideSteps = [];
+    this.guideIndex = -1;
+    this.guideTargetSpecs = [];
+    this.guidePromptShown = false;
     this.refs.gbaImage.src =
       options.gbaImageUrl || new URL('../assets/img/gba.webp', import.meta.url).href;
     this.refs.printerImage.src =
@@ -274,6 +281,17 @@ class GBScribeDemo {
       pageList: q('[data-page-list]'),
       pagesCount: q('[data-pages-count]'),
       toast: q('[data-toast]'),
+      guide: q('[data-guide]'),
+      guideHole: q('[data-guide-hole]'),
+      guideRings: q('[data-guide-rings]'),
+      guideCallout: q('[data-guide-callout]'),
+      guideTitle: q('[data-guide-title]'),
+      guideBody: q('[data-guide-body]'),
+      guideHint: q('[data-guide-hint]'),
+      guideEnd: q('[data-guide-end]'),
+      guideIntro: q('[data-dialog="guide-intro"]'),
+      guideYes: q('[data-guide-yes]'),
+      guideNo: q('[data-guide-no]'),
       bindings: q('[data-bindings]'),
       dialogs: {
         help: q('[data-dialog="help"]'),
@@ -351,7 +369,10 @@ class GBScribeDemo {
     this.updateUI();
     this.layoutCable();
     if (!window.matchMedia('(max-width: 640px)').matches) {
-      this.toast('GBScribe is ready. Click Start, then choose “Print test page”.', false, 5200);
+      this.toast('GBScribe is ready. Click Start, then choose "Print test page".', false, 5200);
+    }
+    if (this.shouldShowGuidePrompt()) {
+      window.setTimeout(() => this.showGuidePrompt(), 900);
     }
   }
 
@@ -438,6 +459,32 @@ class GBScribeDemo {
     for (const button of $$('[data-action="controls"]')) {
       button.addEventListener('click', () => this.openDialog('controls'), { signal });
     }
+    for (const button of $$('[data-action="guide"]')) {
+      button.addEventListener('click', () => this.startGuide(), { signal });
+    }
+    this.refs.guideYes?.addEventListener('click', () => {
+      this.refs.guideIntro.close();
+      this.startGuide();
+    }, { signal });
+    this.refs.guideNo?.addEventListener('click', () => {
+      this.refs.guideIntro.close();
+      this.toast('You can start the guide anytime from the Guide button.');
+    }, { signal });
+    this.refs.guideIntro?.addEventListener('click', (event) => {
+      if (event.target === this.refs.guideIntro) this.refs.guideIntro.close();
+    }, { signal });
+    this.refs.guideIntro?.addEventListener('close', () => {
+      if (this.openDialogElement === this.refs.guideIntro) this.openDialogElement = null;
+    }, { signal });
+    this.refs.guideEnd?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      this.stopGuide(true);
+    }, { signal });
+    this.refs.guide?.addEventListener('pointerdown', (event) => {
+      if (event.target.closest('[data-guide-end]')) return;
+      event.preventDefault();
+      if (this.guideReady) this.advanceGuide();
+    }, { signal });
     for (const button of $$('[data-action="reset"]')) {
       button.addEventListener('click', () => this.resetGba(), { signal });
     }
@@ -707,6 +754,7 @@ class GBScribeDemo {
       return;
     }
 
+    if (this.guideActive) return;
     if (!this.keyboardActive) return;
     if (this.openDialogElement) return;
     if (event.target && event.target.closest && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
@@ -776,6 +824,373 @@ class GBScribeDemo {
     if (!dialog.open) dialog.showModal();
     this.openDialogElement = dialog;
     this.scheduleUI();
+  }
+
+  /* --------------------------------------------------------------- guide */
+
+  shouldShowGuidePrompt() {
+    if (this.options.guidePrompt === false) return false;
+    try {
+      return new URLSearchParams(window.location.search).get('guide') !== '0';
+    } catch {
+      return true;
+    }
+  }
+
+  showGuidePrompt() {
+    if (this.destroyed || !this.loaded || this.guideActive || this.guidePromptShown) return;
+    if (!this.refs.guideIntro || this.refs.guideIntro.open) return;
+    if (this.openDialogElement || this.demoRunning) return;
+    this.guidePromptShown = true;
+    this.openDialogElement = this.refs.guideIntro;
+    this.refs.guideIntro.showModal();
+  }
+
+  closeDialogs() {
+    for (const dialog of Object.values(this.refs.dialogs)) {
+      if (dialog?.open) dialog.close();
+    }
+    if (this.refs.guideIntro?.open) this.refs.guideIntro.close();
+    this.openDialogElement = null;
+  }
+
+  async startGuide() {
+    if (!this.loaded || this.guideActive) return;
+    this.closeDialogs();
+    this.guideActive = true;
+    this.guideReady = false;
+    const run = ++this.guideRunId;
+    this.refs.guide.hidden = false;
+    this.refs.guide.dataset.ready = 'false';
+    this.refs.guide.dataset.step = '';
+    this.refs.guideEnd.hidden = false;
+    this.guidePromptShown = true;
+    this.sound.ensure();
+
+    this.printer.powered = true;
+    this.printer.coverClosed = true;
+    if (this.printer.rollRows < 700) this.printer.replaceRoll();
+    this.scheduleUI();
+    this.bindGuideKeys();
+    await this.resetGba(false);
+    await sleep(1200);
+    if (!this.guideActive || run !== this.guideRunId) return;
+    this.guideSteps = this.createGuideSteps();
+    this.guideIndex = -1;
+    this.toast('Guide started. Tap, click, or press any key to continue.', false, 2600);
+    await this.nextGuideStep(run);
+  }
+
+  createGuideSteps() {
+    return [
+      {
+        id: 'start',
+        title: 'Open GBScribe',
+        body: 'Press Start on the GBA to open the GBScribe menu. The guide will press it for you when you continue.',
+        targets: () => ['[data-button="START"]'],
+        advance: async () => {
+          await this.guideTap('START');
+          await sleep(500);
+        },
+      },
+      {
+        id: 'mode',
+        title: 'Choose a mode',
+        body: 'Use Up and Down to choose Text or Drawing, then press A to confirm. The guide will choose New text document.',
+        targets: () => ['.gbs-dpad-photo', '.gbs-hit-a'],
+        advance: async () => {
+          await this.guideTap('DOWN');
+          await sleep(150);
+          await this.guideTap('UP');
+          await sleep(150);
+          await this.guideTap('A');
+          await sleep(600);
+        },
+      },
+      {
+        id: 'writing',
+        title: 'Writing controls',
+        body: 'The D-pad moves around the keyboard, A types the selected key, B backspaces, and Start opens the menu. The guide will type a character for you.',
+        targets: () => ['.gbs-gba-photo'],
+        advance: async () => {
+          await this.guideTap('A');
+          await sleep(300);
+        },
+      },
+      {
+        id: 'print-menu',
+        title: 'Find Print',
+        body: 'Open the menu with Start, then choose Print document. The guide will do both for you.',
+        targets: () => ['[data-button="START"]'],
+        advance: async () => {
+          await this.guideTap('START');
+          await sleep(450);
+          await this.guideTap('DOWN');
+          await sleep(350);
+        },
+      },
+      {
+        id: 'print-option',
+        title: 'Print document',
+        body: 'This is the print option in the GBScribe menu. The guide will select it and open the print confirmation.',
+        targets: () => [this.guideScreenRect(8, 6, 17, 1.35)],
+        advance: async () => {
+          await this.guideTap('A');
+          await sleep(500);
+        },
+      },
+      {
+        id: 'printing',
+        title: 'Print the page',
+        body: 'The guide will press A to confirm. GBScribe sends the page to the printer; paper feeds up out of the white slot.',
+        targets: () => ['.gbs-hit-a'],
+        advance: async (run) => {
+          const baselineRows = this.paperStore.current.rowCount;
+          await this.guideTap('A');
+          await this.waitForGuidePrint(run, baselineRows);
+        },
+      },
+      {
+        id: 'tear',
+        title: 'Tear off the sheet',
+        body: 'Drag the paper up or use the scissors to cut the sheet off. The guide will cut this one for you.',
+        targets: () => ['.gbs-scissors', '.gbs-tear-tab'],
+        advance: async () => {
+          await sleep(700);
+          if (this.paperStore.hasPaper) this.tearPaper();
+          await sleep(600);
+        },
+      },
+      {
+        id: 'export',
+        title: 'Export your sheet',
+        body: 'The sheet is now in Printed pages. Use PNG, BMP, PDF, or Print in the export bar to keep it or send it to a real printer.',
+        targets: () => ['.gbs-export'],
+      },
+    ];
+  }
+
+  async guideTap(action, hold = 90) {
+    this.pressButton(action, 'guide');
+    await sleep(hold);
+    this.releaseButton(action, 'guide');
+    await sleep(80);
+  }
+
+  async waitForGuidePrint(run, baselineRows = 0) {
+    const deadline = Date.now() + 25_000;
+    while (this.guideActive && run === this.guideRunId && Date.now() < deadline) {
+      const printed =
+        this.paperStore.current.rowCount > baselineRows && !this.printer.printJob;
+      if (printed) return;
+      await sleep(150);
+    }
+  }
+
+  guideScreenRect(x, y, w, h) {
+    const rect = this.refs.screen.getBoundingClientRect();
+    return {
+      left: rect.left + (x / 30) * rect.width,
+      top: rect.top + (y / 20) * rect.height,
+      width: (w / 30) * rect.width,
+      height: (h / 20) * rect.height,
+    };
+  }
+
+  resolveGuideTargets(specs) {
+    const rects = [];
+    let scrollElement = null;
+    for (const spec of specs) {
+      if (!spec) continue;
+      if (typeof spec === 'object') {
+        rects.push(spec);
+        continue;
+      }
+      const element = this.shadow.querySelector(spec);
+      if (!element) continue;
+      const rect = element.getBoundingClientRect();
+      if (!rect.width && !rect.height) continue;
+      rects.push(rect);
+      if (!scrollElement) scrollElement = element;
+    }
+    return { rects, scrollElement };
+  }
+
+  async renderGuideStep(step) {
+    this.guideTargetSpecs = step.targets ? step.targets() : [];
+    let { rects, scrollElement } = this.resolveGuideTargets(this.guideTargetSpecs);
+    if (
+      scrollElement &&
+      (rects.some((rect) => rect.bottom < 0 || rect.top > window.innerHeight))
+    ) {
+      scrollElement.scrollIntoView({ block: 'center', inline: 'center' });
+      await sleep(140);
+      ({ rects } = this.resolveGuideTargets(this.guideTargetSpecs));
+    }
+    this.guideRects = rects;
+    this.refs.guideTitle.textContent = step.title;
+    this.refs.guideBody.textContent = step.body;
+    this.updateGuideHint(false);
+    this.applyGuideGeometry();
+  }
+
+  updateGuideHint(ready) {
+    this.refs.guideHint.textContent = ready
+      ? 'Tap, click, or press any key to continue'
+      : 'Watch the guide...';
+    this.refs.guideHint.dataset.waiting = String(!ready);
+    this.refs.guide.dataset.ready = String(ready);
+  }
+
+  applyGuideGeometry() {
+    const rects = this.guideRects || [];
+    if (!rects.length) {
+      this.refs.guideHole.style.left = '0';
+      this.refs.guideHole.style.top = '0';
+      this.refs.guideHole.style.width = '100vw';
+      this.refs.guideHole.style.height = '100vh';
+      this.refs.guideHole.style.boxShadow = 'none';
+      this.refs.guideHole.style.background = 'rgba(24, 20, 14, .66)';
+      this.refs.guideRings.replaceChildren();
+      return;
+    }
+    this.refs.guideHole.style.background = 'transparent';
+    this.refs.guideHole.style.boxShadow = '0 0 0 9999px rgba(24, 20, 14, .66)';
+
+    const pad = 10;
+    const left = Math.max(6, Math.min(...rects.map((r) => r.left)) - pad);
+    const top = Math.max(6, Math.min(...rects.map((r) => r.top)) - pad);
+    const right = Math.min(window.innerWidth - 6, Math.max(...rects.map((r) => r.right)) + pad);
+    const bottom = Math.min(window.innerHeight - 6, Math.max(...rects.map((r) => r.bottom)) + pad);
+    const width = Math.max(24, right - left);
+    const height = Math.max(24, bottom - top);
+
+    Object.assign(this.refs.guideHole.style, {
+      left: `${left}px`,
+      top: `${top}px`,
+      width: `${width}px`,
+      height: `${height}px`,
+    });
+
+    const rings = document.createDocumentFragment();
+    for (const rect of rects) {
+      const ring = document.createElement('div');
+      ring.className = 'gbs-guide-ring';
+      Object.assign(ring.style, {
+        left: `${rect.left - 7}px`,
+        top: `${rect.top - 7}px`,
+        width: `${Math.max(18, rect.width + 14)}px`,
+        height: `${Math.max(18, rect.height + 14)}px`,
+      });
+      rings.appendChild(ring);
+    }
+    this.refs.guideRings.replaceChildren(rings);
+
+    const callout = this.refs.guideCallout;
+    const calloutWidth = Math.min(360, window.innerWidth - 28);
+    const calloutHeight = callout.offsetHeight || 150;
+    const centerX = left + width / 2;
+    const below = bottom + calloutHeight + 24 < window.innerHeight;
+    const calloutTop = below
+      ? bottom + 18
+      : Math.max(12, top - calloutHeight - 18);
+    const calloutLeft = Math.max(
+      12,
+      Math.min(window.innerWidth - calloutWidth - 12, centerX - calloutWidth / 2),
+    );
+    Object.assign(callout.style, {
+      left: `${calloutLeft}px`,
+      top: `${calloutTop}px`,
+      width: `${calloutWidth}px`,
+    });
+    callout.dataset.placement = below ? 'below' : 'above';
+    callout.style.setProperty('--gbs-arrow-x', `${Math.max(18, centerX - calloutLeft - 6)}px`);
+  }
+
+  bindGuideKeys() {
+    if (this._guideKeyHandler) return;
+    this._guideKeyHandler = (event) => {
+      if (!this.guideActive) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === 'Escape') {
+        this.stopGuide(true);
+        return;
+      }
+      if (this.guideReady) this.advanceGuide();
+    };
+    this._guideReposition = () => {
+      if (!this.guideActive) return;
+      const { rects } = this.resolveGuideTargets(this.guideTargetSpecs || []);
+      this.guideRects = rects;
+      this.applyGuideGeometry();
+    };
+    window.addEventListener('keydown', this._guideKeyHandler, true);
+    window.addEventListener('scroll', this._guideReposition, true);
+    window.addEventListener('resize', this._guideReposition);
+  }
+
+  unbindGuideKeys() {
+    if (this._guideKeyHandler) {
+      window.removeEventListener('keydown', this._guideKeyHandler, true);
+      this._guideKeyHandler = null;
+    }
+    if (this._guideReposition) {
+      window.removeEventListener('scroll', this._guideReposition, true);
+      window.removeEventListener('resize', this._guideReposition);
+      this._guideReposition = null;
+    }
+  }
+
+  async nextGuideStep(run) {
+    if (!this.guideActive || run !== this.guideRunId) return;
+    this.guideIndex++;
+    if (this.guideIndex >= this.guideSteps.length) {
+      this.finishGuide();
+      return;
+    }
+    const step = this.guideSteps[this.guideIndex];
+    this.guideReady = false;
+    this.refs.guide.dataset.ready = 'false';
+    this.refs.guide.dataset.step = step.id;
+    await this.renderGuideStep(step);
+    if (!this.guideActive || run !== this.guideRunId) return;
+    this.guideReady = true;
+    this.updateGuideHint(true);
+  }
+
+  async advanceGuide() {
+    if (!this.guideActive || !this.guideReady) return;
+    this.guideReady = false;
+    this.updateGuideHint(false);
+    const run = this.guideRunId;
+    const step = this.guideSteps[this.guideIndex];
+    try {
+      await step.advance?.(run);
+      if (!this.guideActive || run !== this.guideRunId) return;
+      await this.nextGuideStep(run);
+    } catch (error) {
+      console.error(error);
+      this.stopGuide(true);
+    }
+  }
+
+  finishGuide() {
+    this.stopGuide(false);
+    this.toast('Guide complete. The Guide button can replay it anytime.', false, 4200);
+  }
+
+  stopGuide(endedByUser) {
+    if (!this.guideActive) return;
+    this.guideActive = false;
+    this.guideReady = false;
+    this.guideRunId++;
+    this.unbindGuideKeys();
+    this.refs.guide.hidden = true;
+    this.refs.guideEnd.hidden = true;
+    this.refs.guideRings.replaceChildren();
+    this.refs.guide.dataset.ready = 'false';
+    if (endedByUser) this.toast('Tutorial ended. You can restart it with the Guide button.');
   }
 
   /* --------------------------------------------------------------- power */
@@ -1269,6 +1684,8 @@ class GBScribeDemo {
 
   destroy() {
     this.destroyed = true;
+    this.guideActive = false;
+    this.unbindGuideKeys();
     cancelAnimationFrame(this.raf);
     clearTimeout(this.toastTimer);
     this.abort.abort();

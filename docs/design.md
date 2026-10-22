@@ -58,6 +58,35 @@ top port and printer right port. It leaves the GBA upward, arcs over the gap,
 and enters the printer on its right side. At widths below 1040 px the cable is
 replaced by a compact “Link Cable” chip between the stacked devices.
 
+## Guided tour
+
+The guide is a fixed overlay inside the component's Shadow DOM. It dims the
+page with a large `box-shadow` around a transparent hole, adds pulsing rings
+around each target, and places a callout with an arrow beside the target. Target
+rectangles come from the live DOM, so they follow the responsive layout; the
+in-game **Print document** step computes its rectangle from the 30x20 BG text
+grid inside the 240x160 canvas.
+
+The guide is a step machine, not a scripted video. Each step highlights its
+controls and waits. On a tap, click, or key press, the guide performs that step's
+action through the same `pressButton()` path as the on-screen controls, waits
+for the emulator or printer to finish, then reveals the next step. This keeps
+the highlighted controls and the emulated state in sync. The steps are:
+
+1. Start on the title screen.
+2. D-pad selection and A confirmation in the mode chooser.
+3. The writing controls after entering the text editor.
+4. Start to open the document menu.
+5. The **Print document** entry in that menu.
+6. A to confirm the print.
+7. The tear tab and scissors.
+8. The PNG, BMP, PDF, and Print export bar.
+
+**End tutorial** stays in the viewport's top right while the guide is active.
+The guide can be replayed from the header **Guide** button. Embeds can suppress
+the first-load question with the `guide-prompt="false"` attribute, and tests use
+`?guide=0`.
+
 ## Responsive behavior
 
 - Desktop: printer left, GBA right, cable between.
