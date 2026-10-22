@@ -87,7 +87,7 @@ Game Boy Camera print.
   real Game Boy Camera print.
 - **Tear by dragging** the paper or click the **scissors**.
 - **Power**, **Feed**, **paper roll replacement**, cover state, and paper-out
-  jams.
+  jams. The printer starts powered on; its switch still disconnects it.
 - Roll gauge and physical paper length in cm/mm.
 - Detached sheets collect in **Printed pages**.
 

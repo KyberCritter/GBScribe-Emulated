@@ -11,10 +11,15 @@ import {
   waitForText,
 } from './helpers.js';
 
-test('printer starts off and the power switch connects it', async ({ page }) => {
-  await boot(page, '/', false);
+test('printer starts on and the power switch disconnects it', async ({ page }) => {
+  await boot(page);
+  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
+  await waitForText(page, 'Printer: OK');
+
+  await page.locator('gbscribe-emulator .gbs-hit-power').click();
   await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
   await waitForText(page, 'Printer: disconnected');
+
   await page.locator('gbscribe-emulator .gbs-hit-power').click();
   await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
   await waitForText(page, 'Printer: OK');
@@ -147,6 +152,28 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
   });
 
   test('PNG, BMP, PDF, and browser print exports are wired to the UI', async ({ page }) => {
+    const exportLayout = await page.evaluate(() => {
+      const root = document.querySelector('gbscribe-emulator').shadowRoot;
+      const bar = root.querySelector('.gbs-export');
+      const buttons = [...bar.querySelectorAll('[data-export]')];
+      const barRect = bar.getBoundingClientRect();
+      const rects = buttons.map((button) => button.getBoundingClientRect());
+      return {
+        labels: root.querySelectorAll('.gbs-export-label').length,
+        buttons: buttons.length,
+        barWidth: barRect.width,
+        sameRow: Math.max(...rects.map((rect) => rect.top)) - Math.min(...rects.map((rect) => rect.top)) < 1,
+        inside: rects.every((rect) => rect.left >= barRect.left - 1 && rect.right <= barRect.right + 1),
+        widths: rects.map((rect) => rect.width),
+      };
+    });
+    expect(exportLayout.labels).toBe(0);
+    expect(exportLayout.buttons).toBe(4);
+    expect(exportLayout.barWidth).toBeLessThan(400);
+    expect(exportLayout.sameRow).toBe(true);
+    expect(exportLayout.inside).toBe(true);
+    expect(Math.max(...exportLayout.widths) - Math.min(...exportLayout.widths)).toBeLessThan(2);
+
     await page.evaluate(() => {
       const demo = window.__gbsDemo;
       for (let y = 0; y < 30; y++) demo.paperStore.appendRow(new Uint8Array(160).fill((y * 3) % 4));

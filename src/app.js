@@ -233,9 +233,9 @@ class GBScribeDemo {
       printSpeed: 50,
       feedSpeed: 32,
     });
-    // The hardware photo shows the POWER rocker in the OFF position. Start
-    // there; the quick demo and the switch turn the emulated printer on.
-    this.printer.powered = false;
+    // Start connected so the first print works without an extra power step.
+    // The printer's POWER control still turns it off and on.
+    this.printer.powered = true;
     this.attachUi();
     this.updateMuteUi();
     this.updateUI();
@@ -364,6 +364,7 @@ class GBScribeDemo {
     this.romBuffer = rom;
     gba.runStable();
     this.loaded = true;
+    this.refs.gbaPower?.classList.add('on');
     await sleep(650);
     this.refs.loading.classList.add('is-hidden');
     this.updateUI();

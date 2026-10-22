@@ -47,7 +47,7 @@ types for `.gba`, `.woff2`, and ES modules.
 - boot + printer detection
 - GBA power LED alignment with the photographed socket, circular shape, and
   radial specular highlight
-- printer starts OFF, switch connects it, and GBScribe reports disconnected/OK
+- printer starts ON, switch disconnects/reconnects it, and GBScribe reports disconnected/OK
 - guided test print, paper rendering, tear, PNG download
 - drag-to-tear, feed, roll replacement, cover, power cycle + disconnection
 - PNG/BMP/PDF downloads and browser print popup

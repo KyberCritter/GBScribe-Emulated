@@ -110,7 +110,6 @@ export function buildTemplate() {
       <button class="gbs-btn" data-action="power" type="button">${icons.power}<span>Printer on/off</span></button>
     </div>
     <div class="gbs-export">
-      <span class="gbs-export-label">${icons.download} Export</span>
       <button class="gbs-btn" data-export="png" type="button">PNG</button>
       <button class="gbs-btn" data-export="bmp" type="button">BMP</button>
       <button class="gbs-btn" data-export="pdf" type="button">PDF</button>
