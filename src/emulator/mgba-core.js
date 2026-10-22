@@ -106,7 +106,18 @@ export async function createGbaEmulator(options) {
     if (bytes && bytes.length) writeSave(encodeSave(bytes));
   };
 
-  module.addCoreCallbacks({ saveDataUpdatedCallback: persistSave });
+  const flushSaveToFs = () => {
+    const bytes = liveSave();
+    if (bytes && bytes.length) module.FS.writeFile(SAVE_PATH, bytes);
+  };
+
+  const registerCallbacks = () => {
+    module.addCoreCallbacks({ saveDataUpdatedCallback: persistSave });
+  };
+
+  let volume = options.muted ? 0 : 0.55;
+
+  registerCallbacks();
 
   const audio = {
     get context() {
@@ -116,6 +127,7 @@ export async function createGbaEmulator(options) {
       return module.getVolume();
     },
     set masterVolume(value) {
+      volume = value;
       module.setVolume(value);
     },
     pause(paused) {
@@ -149,8 +161,14 @@ export async function createGbaEmulator(options) {
       detachDevice: () => null,
     },
     setRom() {
+      flushSaveToFs();
       module._gbsGpioSetEnabled(1);
-      module.quickReload();
+      module._gbsUseFlash1M();
+      if (!module.loadGame(ROM_PATH, SAVE_PATH)) {
+        throw new Error('The GBScribe ROM could not be loaded');
+      }
+      module.setVolume(volume);
+      registerCallbacks();
     },
     storeSavedata: persistSave,
     pause() {
