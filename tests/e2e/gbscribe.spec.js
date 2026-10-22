@@ -18,7 +18,11 @@ import {
   resetGba,
   saveDrawing,
   screenText,
+  switchLayer,
   typeLower,
+  typeShape,
+  typeSymbols,
+  typeUpper,
   tap,
   waitForPaper,
   waitForText,
@@ -107,6 +111,39 @@ test.describe('GBScribe features through the emulated hardware', () => {
     await printFromEditor(page);
     expect(await page.evaluate(() => window.__gbsTest.paperInk())).toBeGreaterThan(0);
     expect(await page.evaluate(() => window.__gbsTest.paperRows())).toBeGreaterThan(12);
+  });
+
+  test('keyboard layers type uppercase, symbols, and shape glyphs', async ({ page }) => {
+    await openEditor(page);
+    let state = { layer: 0, index: 0 };
+
+    state = await typeUpper(page, 'HI', state);
+    await expectText(page, 'HI');
+    await waitForText(page, 'Q W E R T Y U I O P');
+
+    state = await typeSymbols(page, '!?', state);
+    await expectText(page, 'HI!?');
+    await waitForText(page, '1 2 3 4 5 6 7 8 9 0');
+
+    state = await typeShape(page, 0x07, state); // filled circle
+    const codes = await page.evaluate(() => window.__gbsTest.screenCodes());
+    expect(codes.slice(0, 13).flat()).toContain(0x07);
+
+    state = await switchLayer(page, state, 0);
+    await waitForText(page, 'q w e r t y u i o p');
+    await tap(page, 'A');
+    await expectText(page, 'HI!?');
+  });
+
+  test('editor menu Resume and Drawing mode route correctly', async ({ page }) => {
+    await openEditor(page);
+    await typeLower(page, 'go');
+    await menuSelect(page, 0); // Resume
+    await expectText(page, 'go');
+    await menuSelect(page, 5); // Drawing mode
+    await page.waitForFunction(() => window.__gbsTest.codeAt(2, 2) === 0x19);
+    await drawMenuSelect(page, 6); // Main menu
+    await waitForText(page, 'PRESS START');
   });
 
   test('drawing tools, palette, save/load, clear, print, and menu', async ({ page }) => {

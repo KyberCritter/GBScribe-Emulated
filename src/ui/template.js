@@ -41,39 +41,27 @@ export function buildTemplate() {
         <span>Game Boy Advance</span>
         <span class="gbs-meta">GBScribe · 240 × 160</span>
       </div>
-      <div class="gbs-gba">
-        <div class="gbs-gba-internals" aria-hidden="true"></div>
-        <button class="gbs-shoulder left" data-button="L" type="button" aria-label="L shoulder button">L</button>
-        <button class="gbs-shoulder right" data-button="R" type="button" aria-label="R shoulder button">R</button>
-        <div class="gbs-bezel">
-          <div class="gbs-screen-frame">
-            <canvas data-screen width="240" height="160" aria-label="Game Boy Advance screen"></canvas>
-            <div class="gbs-screen-loading" data-loading>
-              <span class="gbs-spinner"></span>
-              <span>Loading GBScribe…</span>
-            </div>
+      <div class="gbs-gba-photo">
+        <img class="gbs-gba-image" data-gba-image alt="" draggable="false">
+        <div class="gbs-screen-mount">
+          <canvas data-screen width="240" height="160" aria-label="Game Boy Advance screen"></canvas>
+          <div class="gbs-screen-loading" data-loading>
+            <span class="gbs-spinner"></span>
+            <span>Loading GBScribe…</span>
           </div>
-          <div class="gbs-gba-brand">GAME BOY <b>ADVANCE</b></div>
         </div>
-        <div class="gbs-dpad" aria-label="D-pad">
-          <button class="up" data-button="UP" type="button" aria-label="Up"></button>
-          <button class="left" data-button="LEFT" type="button" aria-label="Left"></button>
-          <span class="center" aria-hidden="true"></span>
-          <button class="right" data-button="RIGHT" type="button" aria-label="Right"></button>
-          <button class="down" data-button="DOWN" type="button" aria-label="Down"></button>
+        <div class="gbs-dpad-photo" aria-label="D-pad">
+          <button class="dpad-up" data-button="UP" type="button" aria-label="D-pad up" title="Up"></button>
+          <button class="dpad-left" data-button="LEFT" type="button" aria-label="D-pad left" title="Left"></button>
+          <button class="dpad-right" data-button="RIGHT" type="button" aria-label="D-pad right" title="Right"></button>
+          <button class="dpad-down" data-button="DOWN" type="button" aria-label="D-pad down" title="Down"></button>
         </div>
-        <div class="gbs-face" aria-label="A and B buttons">
-          <button class="b" data-button="B" type="button" aria-label="B button">B</button>
-          <button class="a" data-button="A" type="button" aria-label="A button">A</button>
-        </div>
-        <div class="gbs-startselect" aria-label="Start and Select buttons">
-          <button data-button="START" type="button" aria-label="Start"><span>START</span></button>
-          <button data-button="SELECT" type="button" aria-label="Select"><span>SELECT</span></button>
-        </div>
-        <div class="gbs-power-led" aria-hidden="true"><i></i><span>POWER</span></div>
-        <div class="gbs-speaker" aria-hidden="true">
-          <i></i><i></i><i></i><i></i><i></i><i></i>
-        </div>
+        <button class="gbs-hit gbs-hit-a" data-button="A" type="button" aria-label="A button" title="A"></button>
+        <button class="gbs-hit gbs-hit-b" data-button="B" type="button" aria-label="B button" title="B"></button>
+        <button class="gbs-hit gbs-hit-start" data-button="START" type="button" aria-label="Start" title="Start"></button>
+        <button class="gbs-hit gbs-hit-select" data-button="SELECT" type="button" aria-label="Select" title="Select"></button>
+        <button class="gbs-hit gbs-hit-l" data-button="L" type="button" aria-label="L shoulder" title="L"></button>
+        <button class="gbs-hit gbs-hit-r" data-button="R" type="button" aria-label="R shoulder" title="R"></button>
         <span class="gbs-port gbs-port-top" data-port-gba aria-hidden="true"></span>
       </div>
       <div class="gbs-under-gba">
@@ -84,40 +72,16 @@ export function buildTemplate() {
     </section>
 
     <section class="gbs-printer-column" aria-label="Game Boy Printer">
-      <div class="gbs-printer-scene">
-        <div class="gbs-printer" data-printer-body>
-          <span class="gbs-port gbs-port-printer" data-port-printer aria-hidden="true"></span>
-          <div class="gbs-printer-cover" data-action="paper" role="button" tabindex="0" aria-label="Open the paper compartment">
-            <div class="gbs-roll-window">
-              <div class="gbs-roll-cylinder"><span class="gbs-roll-core"></span></div>
-              <div class="gbs-roll-fill"><i data-roll-fill style="width:100%"></i></div>
-              <span class="gbs-roll-label" data-roll-label>100%</span>
-            </div>
-            <span class="gbs-cover-label">PAPER</span>
-          </div>
-          <div class="gbs-printer-band">
-            <div class="gbs-slot">
-              <span class="gbs-slot-teeth"></span>
-              <span class="gbs-slot-tongue"></span>
-            </div>
-            <div class="gbs-printer-logo">GAME BOY <b>printer</b></div>
-            <div class="gbs-printer-lights">
-              <span class="gbs-pilot" data-pilot title="Printer status"></span>
-              <span class="gbs-pilot" data-link-pilot title="Link cable"></span>
-              <span class="gbs-battery-label">BATTERY</span>
-            </div>
-          </div>
-          <div class="gbs-printer-front">
-            <div class="gbs-nintendo">Nintendo</div>
-            <button class="gbs-feed" data-action="feed" type="button" aria-label="Feed paper">FEED</button>
-            <button class="gbs-power is-on" data-action="power" type="button" aria-label="Turn printer power on or off">
-              <span class="gbs-onoff"><span>ON</span><span>OFF</span></span>
-              <span class="gbs-power-case"><span class="gbs-switch"></span></span>
-              <span class="gbs-power-label">POWER</span>
-            </button>
-          </div>
-          <div class="gbs-printer-feet" aria-hidden="true"></div>
-        </div>
+      <div class="gbs-printer-scene" data-printer-body>
+        <img class="gbs-printer-image" data-printer-image alt="Game Boy Printer" draggable="false">
+        <button class="gbs-hit gbs-hit-cover" data-action="paper" type="button" aria-label="Open the paper compartment" title="Open paper compartment"></button>
+        <button class="gbs-hit gbs-hit-feed" data-action="feed" type="button" aria-label="Feed paper" title="Feed paper"></button>
+        <button class="gbs-hit gbs-hit-power" data-action="power" type="button" aria-label="Turn printer power on or off" title="Power"></button>
+        <span class="gbs-port gbs-port-printer" data-port-printer aria-hidden="true"></span>
+        <span class="gbs-printer-led" data-pilot title="Printer status"></span>
+        <span class="gbs-printer-led gbs-printer-link-led" data-link-pilot title="Link cable"></span>
+        <span hidden data-roll-label>100%</span>
+        <span hidden class="gbs-roll-fill"><i data-roll-fill style="width:100%"></i></span>
 
         <div class="gbs-paper-stage" data-paper-stage>
           <div class="gbs-paper-empty" data-paper-empty aria-hidden="true"></div>

@@ -10,6 +10,7 @@ copyleft licenses.
 | AdvancePrint | protocol/job semantics from the GBScribe printer layer | MIT | [`gbscribe-MIT.txt`](gbscribe-MIT.txt) |
 | GBA.js | endrift/gbajs, vendored and patched | BSD-2-Clause | [`gbajs-BSD-2-Clause.txt`](gbajs-BSD-2-Clause.txt) |
 | Press Start 2P | Google Fonts, latin WOFF2 subset | SIL Open Font License 1.1 | [`press-start-2p-OFL-1.1.txt`](press-start-2p-OFL-1.1.txt) |
+| Hardware photos | Supplied by Scott Ratchford | Author's own photographs | [`../assets/img/README.md`](../assets/img/README.md) |
 
 GBA.js is distributed under the 2-clause BSD license, which permits
 redistribution and modification provided the copyright notice and disclaimer

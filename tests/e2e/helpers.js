@@ -14,6 +14,43 @@ const LOWER = [
   { label: 'shape', x: 14, y: 19, w: 3 },
 ];
 
+const COMMON = [
+  { label: 'SPACE', x: 24, y: 16, w: 5 },
+  { label: 'ENTER', x: 24, y: 17, w: 5 },
+  { label: 'abc', x: 2, y: 19, w: 3 },
+  { label: 'ABC', x: 6, y: 19, w: 3 },
+  { label: '!@#', x: 10, y: 19, w: 3 },
+  { label: 'shape', x: 14, y: 19, w: 3 },
+];
+
+const SHIFT = { label: 'SHIFT', x: 24, y: 15, w: 5 };
+
+const UPPER = [
+  ...'QWERTYUIOP'.split('').map((ch, i) => ({ ch, x: 2 + i * 2, y: 15, w: 1 })),
+  ...'ASDFGHJKL'.split('').map((ch, i) => ({ ch, x: 2 + i * 2, y: 16, w: 1 })),
+  ...'ZXCVBNM,.'.split('').map((ch, i) => ({ ch, x: 2 + i * 2, y: 17, w: 1 })),
+  SHIFT,
+  ...COMMON,
+];
+
+const SYMBOLS = [
+  ...'1234567890'.split('').map((ch, i) => ({ ch, x: 2 + i * 2, y: 14, w: 1 })),
+  ...'!@#$%^&*()'.split('').map((ch, i) => ({ ch, x: 2 + i * 2, y: 15, w: 1 })),
+  ...'-_=+[]{}|\\'.split('').map((ch, i) => ({ ch, x: 2 + i * 2, y: 16, w: 1 })),
+  ...';:\'\"<>/ ?~`'.replace(' ', '').split('').map((ch, i) => ({ ch, x: 2 + i * 2, y: 17, w: 1 })),
+  ...COMMON,
+];
+
+const SHAPES = [
+  ...[1, 2, 3, 4].map((code, i) => ({ code, x: 2 + i * 2, y: 14, w: 1 })),
+  ...[5, 6, 7, 8, 9, 0x0b, 0x0c, 0x0d].map((code, i) => ({ code, x: 2 + i * 2, y: 15, w: 1 })),
+  ...[0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13].map((code, i) => ({ code, x: 2 + i * 2, y: 16, w: 1 })),
+  ...[0x14, 0x15, 0x16, 0x17, 0x18].map((code, i) => ({ code, x: 2 + i * 2, y: 17, w: 1 })),
+  ...COMMON,
+];
+
+const LAYERS = [LOWER, UPPER, SYMBOLS, SHAPES];
+
 const center = (key) => key.x * 2 + key.w;
 
 /** Exact port of kb_move from src/ui/keyboard.c. */
@@ -74,6 +111,23 @@ const MOVES = [
   ['UP', 0, -1],
   ['DOWN', 0, 1],
 ];
+
+function kbNearest(from, sel, to) {
+  const cur = from[sel];
+  let best = 0;
+  let bestD = 1 << 30;
+  for (let i = 0; i < to.length; i++) {
+    const key = to[i];
+    const dx = center(key) - center(cur);
+    const dy = (key.y - cur.y) * 8;
+    const d = dx * dx + dy * dy;
+    if (d < bestD) {
+      best = i;
+      bestD = d;
+    }
+  }
+  return best;
+}
 
 function pathTo(keys, start, target) {
   if (start === target) return [];
@@ -304,6 +358,52 @@ export async function typeLower(page, text, cursor = 0) {
     index = target;
   }
   return index;
+}
+
+/**
+ * Switch the on-screen keyboard layer using SELECT and track the ROM's
+ * kb_nearest() cursor behavior.
+ */
+export async function switchLayer(page, state, target) {
+  let { layer, index } = state;
+  while (layer !== target) {
+    await tap(page, 'SELECT');
+    const next = (layer + 1) % 4;
+    index = kbNearest(LAYERS[layer], index, LAYERS[next]);
+    layer = next;
+  }
+  return { layer, index };
+}
+
+async function typeInTable(page, table, state, getter, value) {
+  const target = table.findIndex((key) => getter(key) === value);
+  if (target < 0) throw new Error(`No key for ${JSON.stringify(value)} on this layer`);
+  let index = state.index;
+  const path = pathTo(table, index, target);
+  for (const button of path) await tap(page, button);
+  await tap(page, 'A');
+  return { layer: state.layer, index: target };
+}
+
+export async function typeUpper(page, text, state) {
+  let next = await switchLayer(page, state, 1);
+  for (const char of text) {
+    next = await typeInTable(page, UPPER, next, (key) => key.ch, char);
+  }
+  return next;
+}
+
+export async function typeSymbols(page, text, state) {
+  let next = await switchLayer(page, state, 2);
+  for (const char of text) {
+    next = await typeInTable(page, SYMBOLS, next, (key) => key.ch, char);
+  }
+  return next;
+}
+
+export async function typeShape(page, code, state) {
+  const next = await switchLayer(page, state, 3);
+  return await typeInTable(page, SHAPES, next, (key) => key.code, code);
 }
 
 export async function waitForPaper(page, minRows = 12, timeout = 40_000) {

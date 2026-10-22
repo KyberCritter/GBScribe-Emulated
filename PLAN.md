@@ -31,8 +31,8 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | Paper output, tear, scissors, pages | Done |
 | PNG / BMP / PDF / print | Done |
 | Reusable link-port package | Done (`src/linkport/`) |
-| Node unit tests | Done (17) |
-| Playwright feature tests | Done (13) |
+| Node unit tests | Done (18) |
+| Playwright feature tests | Done (16) |
 | Blog embedding docs | Done |
 | GitHub Pages workflow | Done |
 
@@ -42,9 +42,9 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | --- | --- |
 | Preexisting in-browser GBA emulator | GBA.js, vendored stock, BSD-2-Clause |
 | GBScribe ROM from main / latest release | Built from `KyberCritter/GBScribe` master at `fb78d59` |
-| GBA around emulated screen | CSS/SVG shell based on the crimson translucent GBA photo |
-| Clickable / remappable controls | On-screen multi-touch buttons + remappable keyboard bindings |
-| GB Printer next to it, Link Cable | Portrait printer shell, cable from GBA top port to printer right port |
+| GBA around emulated screen | The supplied crimson GBA photo, cut out, with the live screen composited into its display |
+| Clickable / remappable controls | Transparent hit zones over the photo + remappable keyboard bindings |
+| GB Printer next to it, Link Cable | Supplied printer photo, cut out, on the left; cable from GBA top port to printer right port |
 | Print, replace paper, power, feed | Printer device + UI controls |
 | Paper slowly prints out | Print job emits one dot row per tick; paper strip grows in real time |
 | Tear by drag or scissors | Drag tear tab or paper body; scissors button; gallery |
@@ -171,20 +171,22 @@ PDF, and print match the on-screen paper margins.
 
 ## UI design
 
-Reference photos used (kept only in the uncommitted `.scratchwork/`):
+The supplied hardware photos are used directly, with their backgrounds cut out:
 
-1. Translucent crimson GBA with a white screen bezel, white D-pad/A/B, small
-   Start/Select under the D-pad, top-right POWER LED, bottom-right speaker,
-   Link Cable port on the top edge.
-2. Beige Game Boy Printer, smoked roll cover, black brand band, white paper
-   slot, red FEED button, gray POWER switch, Nintendo oval.
+1. Front-on translucent crimson GBA with a white screen bezel, white D-pad,
+   A/B, small Start/Select under the D-pad, top-right POWER LED, bottom-right
+   speaker, and Link Cable port on the top edge.
+2. Front-on beige Game Boy Printer, smoked roll cover, black brand band, white
+   paper slot, red FEED button, gray POWER switch, Nintendo oval, and a
+   right-side Link Cable port.
 3. Printed paper close-up for the print-width ratio.
 
 Implementation notes:
 
+- The printer sits on the **left**, the GBA on the **right**.
 - The GBA screen is the real 240×160 canvas, scaled with pixelated rendering.
-- The printer is portrait. The paper exits the **white slot** below the roll
-  cover and hangs down over the printer front, exactly like a real print.
+- The printer is the supplied photo; paper exits the **white slot** below the
+  roll cover and hangs down over the printer front, like a real print.
 - The paper strip is clipped in a scrollable window with auto-follow; its
   tear tab is always reachable at the bottom.
 - The Link Cable starts at the GBA's **top link port** and ends at the

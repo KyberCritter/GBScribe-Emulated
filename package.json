@@ -5,10 +5,17 @@
   "type": "module",
   "description": "GBScribe + Game Boy Printer in the browser, with GBA.js and a reusable GPIO link-port device layer.",
   "license": "MIT",
+  "exports": {
+    "./linkport": "./src/linkport/index.js",
+    "./linkport/byte": "./src/linkport/byte-link.js",
+    "./printer": "./src/printer/gb-printer.js",
+    "./demo": "./src/gbscribe-demo.js"
+  },
   "scripts": {
     "test": "node --test tests/*.test.js",
     "test:e2e": "playwright test",
     "test:all": "npm test && npm run test:e2e",
+    "example:bytes": "node examples/gb-printer-bytes.mjs",
     "serve": "node tests/e2e/server.mjs"
   },
   "devDependencies": {

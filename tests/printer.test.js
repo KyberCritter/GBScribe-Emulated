@@ -139,6 +139,30 @@ test('RLE packets expand repeated runs', () => {
   assert.equal(decoded.at(-1), 9);
 });
 
+test('a GB Camera-sized 160x144 image prints through ByteLinkAdapter', () => {
+  const { device, events, advance } = makeDevice();
+  const cable = new ByteLinkAdapter(device);
+  const send = (packet) => Array.from(packet).map((byte) => cable.transferByte(byte));
+  const sendCommand = (cmd, payload = new Uint8Array()) => send(makePacket(cmd, payload));
+
+  // 18 tile rows = 5,760 bytes = a full Game Boy Camera page. Each packet is
+  // the DMG printer's 640-byte maximum.
+  const image = new Uint8Array(5760);
+  for (let i = 0; i < image.length; i++) image[i] = (i * 37) & 0xff;
+  for (let offset = 0; offset < image.length; offset += 640) {
+    sendCommand(CMD.DATA, image.subarray(offset, offset + 640));
+  }
+  sendCommand(CMD.DATA); // arm
+  sendCommand(CMD.PRINT, Uint8Array.from([1, 0x13, 0xe4, 0x40]));
+
+  for (let i = 0; i < 20; i++) advance(1000);
+
+  const printed = events.filter((event) => event.type === 'row' && event.kind === 'print');
+  assert.equal(printed.length, 144);
+  assert.equal(device.printJob, null);
+  assert.equal(device.rollRows, 4000 - (8 + 144 + 24));
+});
+
 test('multiple copies repeat the image', () => {
   const { device, events, advance } = makeDevice();
   transfer(device, makePacket(CMD.DATA, new Uint8Array(320).fill(0xff)));

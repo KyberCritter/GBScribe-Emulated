@@ -64,18 +64,21 @@ test.describe('Reusable GBA.js link port and host controls', () => {
     await expect(page.locator('gbscribe-emulator [data-binding="A"]')).toHaveText('Q');
     await page.locator('gbscribe-emulator [data-dialog="controls"] [data-close]').first().click();
 
-    await page.locator('gbscribe-emulator .gbs-screen-frame').click();
+    await page.locator('gbscribe-emulator .gbs-screen-mount').click();
     await page.keyboard.down('KeyQ');
     expect(await page.evaluate(() => (window.__gbsDemo.gba.keypad.currentDown & 1) === 0)).toBe(true);
     await page.keyboard.up('KeyQ');
     expect(await page.evaluate(() => (window.__gbsDemo.gba.keypad.currentDown & 1) === 1)).toBe(true);
 
     // On-screen Start: real pointer events, active-low keypad bit 3.
-    const box = await page.locator('gbscribe-emulator [data-button="START"]').boundingBox();
+    const startButton = page.locator('gbscribe-emulator [data-button="START"]');
+    await startButton.scrollIntoViewIfNeeded();
+    const box = await startButton.boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
     expect(await page.evaluate(() => (window.__gbsDemo.gba.keypad.currentDown & (1 << 3)) === 0)).toBe(true);
     await page.mouse.up();
+    await page.waitForTimeout(80);
     expect(await page.evaluate(() => (window.__gbsDemo.gba.keypad.currentDown & (1 << 3)) !== 0)).toBe(true);
 
     // Reset defaults.

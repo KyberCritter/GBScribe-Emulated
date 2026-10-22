@@ -26,6 +26,7 @@ types for `.gba`, `.woff2`, and ES modules.
 - RLE expansion
 - multi-copy prints
 - `ByteLinkAdapter`
+- a full GB Camera-sized 160?144 image through the byte adapter
 
 `tests/paper.test.js`
 
@@ -59,6 +60,9 @@ types for `.gba`, `.woff2`, and ES modules.
   About/Instructions from the editor menu
 - Konami Easter egg debug menu and print path
 - title-screen load of a saved document after reset
+- uppercase/symbol/shape keyboard layers
+- Resume and Drawing mode routing
+- mobile layout: stacking, no overflow, image loading, on-screen Start
 
 `tests/e2e/linkport.spec.js`
 

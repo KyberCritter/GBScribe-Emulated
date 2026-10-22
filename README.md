@@ -41,9 +41,10 @@ INQUIRY probe, streams its normal DATA chunks, and polls the normal PRINTING
 status bit. Powering the printer off makes GBScribe report
 `Printer: disconnected` through the same code path as real hardware.
 
-The shells are modelled on the hardware photos: a translucent crimson GBA with
-a white bezel and white controls, and a portrait beige printer with a smoked
-paper-roll cover, black brand band, and white output slot. The Link Cable leaves
+The shells are the supplied hardware photos, cut out for the browser: a
+front-on crimson GBA with a white bezel and white controls, and a front-on
+beige printer with a smoked paper-roll cover, black brand band, and white
+output slot. The printer is on the left, the GBA on the right. The Link Cable leaves
 the **top** of the GBA and enters the **right side** of the printer. Paper feeds
 out of the white slot and hangs down over the printer, like the real thing. The
 print image is centered on the paper at the ~57% width measured from a real
@@ -238,7 +239,7 @@ editor, drawing tools, saves, settings, credits, legal page, instructions,
 Konami Easter egg, QR print, drawing print, paper tearing, roll replacement,
 power cycling, exports, rebinding, and the reusable GPIO/byte link layers.
 
-The e2e suite has 13 tests; the Node suite has 17. The e2e tests read
+The e2e suite has 16 tests; the Node suite has 18. The e2e tests read
 GBScribe's real BG text map and FLASH save data through the emulator, so
 assertions cover actual ROM state rather than DOM mocks.
 
@@ -280,6 +281,9 @@ GBA.js by Jeffrey Pfau, BSD-2-Clause; see
 
 Press Start 2P font, SIL Open Font License 1.1; see
 [`assets/fonts/OFL.txt`](assets/fonts/OFL.txt).
+
+The GBA and printer photographs are the project author's own hardware photos,
+cut out for the browser shells; see [`assets/img/README.md`](assets/img/README.md).
 
 Third-party notices are collected in [`LICENSES/`](LICENSES/).
 

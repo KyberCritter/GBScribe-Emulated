@@ -206,11 +206,16 @@ class GBScribeDemo {
     this.listeningAction = null;
     this.keyboardActive = false;
     this.held = new Map();
+    this.pressTimes = new Map();
     this.abort = new AbortController();
     this.uiDirty = false;
     this.followPaper = true;
     this.viewSheetId = null;
     this.toastTimer = null;
+    this.refs.gbaImage.src =
+      options.gbaImageUrl || new URL('../assets/img/gba.webp', import.meta.url).href;
+    this.refs.printerImage.src =
+      options.printerImageUrl || new URL('../assets/img/printer.webp', import.meta.url).href;
     this.bindings = { ...DEFAULT_BINDINGS, ...loadLocal(BINDINGS_KEY, {}) };
     this.muted = loadLocal(SOUND_KEY, false);
     this.sound = new SoundBoard({ muted: this.muted });
@@ -243,6 +248,8 @@ class GBScribeDemo {
       portGba: q('[data-port-gba]'),
       portPrinter: q('[data-port-printer]'),
       screen: q('[data-screen]'),
+      gbaImage: q('[data-gba-image]'),
+      printerImage: q('[data-printer-image]'),
       loading: q('[data-loading]'),
       printerBody: q('[data-printer-body]'),
       paper: q('[data-paper]'),
@@ -342,7 +349,9 @@ class GBScribeDemo {
     this.refs.loading.classList.add('is-hidden');
     this.updateUI();
     this.layoutCable();
-    this.toast('GBScribe is ready. Click Start, then choose “Print test page”.', false, 5200);
+    if (!window.matchMedia('(max-width: 640px)').matches) {
+      this.toast('GBScribe is ready. Click Start, then choose “Print test page”.', false, 5200);
+    }
   }
 
   showLoading(message) {
@@ -573,8 +582,9 @@ class GBScribeDemo {
     const sy = gbaRect.top - stageRect.top + 1;
     const ex = printerRect.right - stageRect.left + 2;
     const ey = printerRect.top + printerRect.height / 2 - stageRect.top;
-    const lift = Math.max(48, Math.min(150, (ex - sx) * 0.26));
-    const d = `M ${sx.toFixed(1)} ${sy.toFixed(1)} C ${(sx + lift).toFixed(1)} ${(sy - lift).toFixed(1)}, ${(ex + lift * 0.55).toFixed(1)} ${(ey - lift * 1.25).toFixed(1)}, ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+    const dir = ex >= sx ? 1 : -1;
+    const lift = Math.max(48, Math.min(150, Math.abs(ex - sx) * 0.26));
+    const d = `M ${sx.toFixed(1)} ${sy.toFixed(1)} C ${(sx + dir * lift).toFixed(1)} ${(sy - lift).toFixed(1)}, ${(ex + dir * lift * 0.6).toFixed(1)} ${(ey - lift * 1.25).toFixed(1)}, ${ex.toFixed(1)} ${ey.toFixed(1)}`;
     cable.setAttribute('viewBox', `0 0 ${stageRect.width.toFixed(1)} ${stageRect.height.toFixed(1)}`);
     cablePath.setAttribute('d', d);
     cableHighlight.setAttribute('d', d);
@@ -606,6 +616,7 @@ class GBScribeDemo {
     const wasEmpty = sources.size === 0;
     sources.add(source);
     if (wasEmpty) {
+      this.pressTimes.set(action, performance.now());
       this.gba.keypad.currentDown &= ~(1 << BUTTON_INDEX[action]);
       this.markButton(action, true);
     }
@@ -615,16 +626,28 @@ class GBScribeDemo {
     const sources = this.held.get(action);
     if (!sources) return;
     sources.delete(source);
-    if (sources.size === 0) {
+    if (sources.size > 0) return;
+
+    // A mouse/touch click can be shorter than one 60 Hz frame. Hold it just
+    // long enough for the ROM's key_hit() to see the edge.
+    const heldFor = performance.now() - (this.pressTimes.get(action) || 0);
+    const delay = source.startsWith('pointer:') ? Math.max(0, 50 - heldFor) : 0;
+    const finish = () => {
+      const remaining = this.held.get(action);
+      if (remaining && remaining.size > 0) return;
       this.held.delete(action);
+      this.pressTimes.delete(action);
       if (this.gba) this.gba.keypad.currentDown |= 1 << BUTTON_INDEX[action];
       this.markButton(action, false);
-    }
+    };
+    if (delay > 0) setTimeout(finish, delay);
+    else finish();
   }
 
   releaseAll() {
     for (const action of Array.from(this.held.keys())) {
       this.held.delete(action);
+      this.pressTimes.delete(action);
       if (this.gba) this.gba.keypad.currentDown |= 1 << BUTTON_INDEX[action];
       this.markButton(action, false);
     }

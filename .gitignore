@@ -26,3 +26,4 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 *.log
+/images-*.png

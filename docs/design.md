@@ -1,8 +1,15 @@
 # Design notes
 
-The in-browser shells are based on the hardware photos supplied during the
-project. The photos themselves are kept in the uncommitted `.scratchwork/`
-directory; public photos from the GBScribe blog are linked here for comparison.
+The in-browser shells are the hardware photos supplied during the project,
+cut out from their backgrounds and used directly:
+
+- `assets/img/gba.png` / `gba.webp` — front-on crimson GBA; the original screen
+  is replaced by the live 240×160 canvas.
+- `assets/img/printer.png` / `printer.webp` — front-on Game Boy Printer; the
+  short paper leader is removed and the live paper overlays the white slot.
+
+The original uploads are kept in `.scratchwork/reference/` (uncommitted) for
+comparison.
 
 ## GBA
 
@@ -52,7 +59,7 @@ replaced by a compact “Link Cable” chip between the stacked devices.
 
 ## Responsive behavior
 
-- Desktop: GBA left, printer right, cable between.
+- Desktop: printer left, GBA right, cable between.
 - Tablet/phone: stacked GBA → Link Cable chip → printer.
 - The paper remains an overlay on the printer at all sizes; feed/power stay
   outside the paper width.
