@@ -49,7 +49,8 @@ types for `.gba`, `.woff2`, and ES modules.
   radial specular highlight
 - printer starts ON, switch disconnects/reconnects it, and GBScribe reports disconnected/OK
 - guided test print, paper rendering, tear, PNG download
-- drag-to-tear, feed, roll replacement, cover, power cycle + disconnection
+- drag-to-tear, feed hit-zone alignment, hold-to-feed without text selection,
+  roll replacement, cover, power cycle + disconnection
 - PNG/BMP/PDF downloads and browser print popup
 - title menu inventory
 

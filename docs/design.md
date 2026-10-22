@@ -33,7 +33,9 @@ comparison.
   and status/battery LEDs.
 - **White paper slot** at the top of the black band is the paper exit.
 - Beige front with an embossed Nintendo oval, red circular FEED button at the
-  lower left, and gray POWER slider with ON/OFF at the lower right.
+  lower left, and gray POWER slider with ON/OFF at the lower right. The FEED
+  hit zone is centered on the photographed button at 24.5% / 86.9% of the
+  printer image.
 - Link Cable port on the **right side**.
 
 ## Paper and print width

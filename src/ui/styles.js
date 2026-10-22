@@ -47,6 +47,10 @@ export function buildStyles() {
     #f5f1e7;
   box-shadow: 0 1px 0 #fff inset, 0 24px 70px -40px #2c2416;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .gbs-root::before {
@@ -420,8 +424,8 @@ export function buildStyles() {
   border-radius: 14% 14% 8% 8% / 20% 20% 6% 6%;
 }
 .gbs-hit-feed {
-  left: 12.8%;
-  top: 77.2%;
+  left: 13.75%;
+  top: 81.4%;
   width: 21.5%;
   height: 11%;
   border-radius: 50%;

@@ -543,6 +543,8 @@ class GBScribeDemo {
       photoFeed.addEventListener('pointerup', stopFeed, { signal });
       photoFeed.addEventListener('pointercancel', stopFeed, { signal });
       photoFeed.addEventListener('lostpointercapture', stopFeed, { signal });
+      photoFeed.addEventListener('contextmenu', (event) => event.preventDefault(), { signal });
+      photoFeed.addEventListener('selectstart', (event) => event.preventDefault(), { signal });
       photoFeed.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();

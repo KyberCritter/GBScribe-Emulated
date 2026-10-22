@@ -117,6 +117,23 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     // Holding the photo's FEED button keeps advancing paper.
     const feedButton = page.locator('gbscribe-emulator .gbs-hit-feed');
     await feedButton.scrollIntoViewIfNeeded();
+    const feedGeometry = await page.evaluate(() => {
+      const root = document.querySelector('gbscribe-emulator').shadowRoot;
+      const scene = root.querySelector('.gbs-printer-scene').getBoundingClientRect();
+      const feed = root.querySelector('.gbs-hit-feed').getBoundingClientRect();
+      return {
+        centerX: (feed.left + feed.width / 2 - scene.left) / scene.width,
+        centerY: (feed.top + feed.height / 2 - scene.top) / scene.height,
+        aspect: feed.height / feed.width,
+        userSelect: getComputedStyle(root.querySelector('.gbs-root')).userSelect,
+      };
+    });
+    expect(feedGeometry.centerX).toBeCloseTo(0.245, 3);
+    expect(feedGeometry.centerY).toBeCloseTo(0.869, 3);
+    expect(feedGeometry.aspect).toBeGreaterThan(0.9);
+    expect(feedGeometry.aspect).toBeLessThan(1.1);
+    expect(feedGeometry.userSelect).toBe('none');
+
     const feedBox = await feedButton.boundingBox();
     const beforeHold = await page.evaluate(() => window.__gbsDemo.printer.rollRows);
     await page.mouse.move(feedBox.x + feedBox.width / 2, feedBox.y + feedBox.height / 2);
@@ -125,6 +142,7 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await page.mouse.up();
     await page.waitForTimeout(200);
     expect(await page.evaluate(() => window.__gbsDemo.printer.rollRows)).toBeLessThan(beforeHold - 8);
+    expect(await page.evaluate(() => window.getSelection()?.toString() ?? '')).toBe('');
 
     // Drag the paper tab downward to tear it off physically.
     const rect = await page.evaluate(() => {
