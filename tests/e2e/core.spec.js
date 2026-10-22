@@ -184,11 +184,33 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     // Power off -> the ROM's real INQUIRY path reports disconnected.
     await page.locator('gbscribe-emulator [data-action="power"]').first().click();
     await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
+    await page.waitForTimeout(250);
+    expect(
+      await page.evaluate(() => {
+        const root = document.querySelector('gbscribe-emulator').shadowRoot;
+        return {
+          powered: root.querySelector('.gbs-printer-scene').classList.contains('is-powered'),
+          on: getComputedStyle(root.querySelector('.gbs-printer-switch-on')).opacity,
+          off: getComputedStyle(root.querySelector('.gbs-printer-switch-off')).opacity,
+        };
+      }),
+    ).toEqual({ powered: false, on: '0', off: '1' });
     await resetGba(page);
     await waitForText(page, 'Printer: disconnected', 8000);
 
     await page.locator('gbscribe-emulator [data-action="power"]').first().click();
     await waitForText(page, 'Printer: OK', 8000);
+    await page.waitForTimeout(250);
+    expect(
+      await page.evaluate(() => {
+        const root = document.querySelector('gbscribe-emulator').shadowRoot;
+        return {
+          powered: root.querySelector('.gbs-printer-scene').classList.contains('is-powered'),
+          on: getComputedStyle(root.querySelector('.gbs-printer-switch-on')).opacity,
+          off: getComputedStyle(root.querySelector('.gbs-printer-switch-off')).opacity,
+        };
+      }),
+    ).toEqual({ powered: true, on: '1', off: '0' });
   });
 
   test('printer image stays still while idle and feeding', async ({ page }) => {

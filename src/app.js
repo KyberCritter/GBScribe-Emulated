@@ -171,6 +171,12 @@ class GBScribeDemo {
       options.gbaImageUrl || new URL('../assets/img/gba.webp', import.meta.url).href;
     this.refs.printerImage.src =
       options.printerImageUrl || new URL('../assets/img/printer.webp', import.meta.url).href;
+    this.refs.switchOn.src =
+      options.printerSwitchOnUrl ||
+      new URL('../assets/img/printer-switch-on.webp', import.meta.url).href;
+    this.refs.switchOff.src =
+      options.printerSwitchOffUrl ||
+      new URL('../assets/img/printer-switch-off.webp', import.meta.url).href;
     this.bindings = { ...DEFAULT_BINDINGS };
     this.muted = false;
     this.sound = new SoundBoard({ muted: this.muted });
@@ -223,7 +229,8 @@ class GBScribeDemo {
       status: q('[data-status]'),
       statusLed: q('[data-status-led]'),
       pilot: q('[data-pilot]'),
-      linkPilot: q('[data-link-pilot]'),
+      switchOn: q('[data-switch-on]'),
+      switchOff: q('[data-switch-off]'),
       rollFill: q('[data-roll-fill]'),
       rollLabel: q('[data-roll-label]'),
       gbaPower: q('[data-gba-power]'),
@@ -1681,7 +1688,7 @@ class GBScribeDemo {
     } else {
       this.refs.pilot.classList.add('on');
     }
-    this.refs.linkPilot.className = `gbs-printer-led gbs-printer-link-led ${powered ? 'on' : ''}`.trim();
+    this.refs.printerBody.classList.toggle('is-powered', powered);
 
     for (const button of this.refs.powerButtons) {
       button.classList.toggle('is-on', powered);

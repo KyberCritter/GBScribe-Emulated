@@ -298,19 +298,33 @@ export function buildStyles() {
 .gbs-hit:active, .gbs-hit.is-pressed { background: #ffffff3d; box-shadow: 0 0 0 3px #fff; }
 .gbs-hit:focus-visible { outline: 3px solid #ffffffd9; outline-offset: 2px; }
 
-.gbs-hit-a { left: 88.5%; top: 31.9%; width: 8%; height: 13.8%; }
-.gbs-hit-b { left: 81.8%; top: 43.5%; width: 8%; height: 13.4%; }
-.gbs-hit-start { left: 16.6%; top: 60.6%; width: 5.4%; height: auto; aspect-ratio: 1; }
-.gbs-hit-select { left: 16.5%; top: 70.4%; width: 5.4%; height: auto; aspect-ratio: 1; }
-.gbs-hit-l { left: 8%; top: 0.6%; width: 22%; height: 5%; border-radius: 0 0 18px 18px; }
-.gbs-hit-r { right: 7%; top: 0.6%; width: 22%; height: 5%; border-radius: 0 0 18px 18px; }
+.gbs-hit-a { left: 87%; top: 32.3%; width: 8%; height: 13.8%; }
+.gbs-hit-b { left: 77.9%; top: 37.7%; width: 8%; height: 13.4%; }
+.gbs-hit-start { left: 16.72%; top: 60.56%; width: 5.4%; height: auto; aspect-ratio: 1; }
+.gbs-hit-select { left: 16.55%; top: 70.48%; width: 5.4%; height: auto; aspect-ratio: 1; }
+.gbs-hit-l {
+  left: 5%;
+  top: 5%;
+  width: 15%;
+  height: 5%;
+  border-radius: 50%;
+  transform: rotate(-16deg);
+}
+.gbs-hit-r {
+  right: 4.5%;
+  top: 5%;
+  width: 15%;
+  height: 5%;
+  border-radius: 50%;
+  transform: rotate(16deg);
+}
 
 .gbs-dpad-photo {
   position: absolute;
-  left: 5%;
-  top: 28.7%;
-  width: 14.5%;
-  height: 24.3%;
+  left: 6.75%;
+  top: 30.25%;
+  width: 12.42%;
+  height: 21.42%;
   z-index: 14;
 }
 .gbs-dpad-photo button {
@@ -409,10 +423,10 @@ export function buildStyles() {
   border-radius: 50%;
 }
 .gbs-hit-power {
-  left: 60%;
-  top: 77.8%;
-  width: 35%;
-  height: 13.6%;
+  left: 60.7%;
+  top: 78.7%;
+  width: 21.5%;
+  height: 13.1%;
   border-radius: 7px;
 }
 .gbs-port-printer {
@@ -434,12 +448,39 @@ export function buildStyles() {
   z-index: 20;
   pointer-events: none;
 }
-.gbs-printer-led.on { background: #48b961; box-shadow: 0 0 8px #48b961cc, 0 0 0 1px #2b7a3c; }
-.gbs-printer-led.busy { background: var(--gbs-amber); box-shadow: 0 0 9px #e8a51bdd, 0 0 0 1px #8c5e0e; animation: gbs-pulse .7s ease-in-out infinite alternate; }
-.gbs-printer-led.error { background: var(--gbs-red); box-shadow: 0 0 9px #bf3b30dd, 0 0 0 1px #6d1812; }
-.gbs-printer-link-led { left: auto; right: 1.4%; top: 59.4%; width: 5px; height: 5px; }
-.gbs-printer-link-led.on { background: #5aa5e8; box-shadow: 0 0 8px #5aa5e8cc; }
+.gbs-printer-led.on {
+  background: radial-gradient(circle at 36% 30%, #ffb2a8 0 8%, #ef4433 42%, #a51207 100%);
+  box-shadow: 0 0 8px #ef4433cc, 0 0 0 1px #6c0e05;
+}
+.gbs-printer-led.busy {
+  background: radial-gradient(circle at 36% 30%, #ffc1b8 0 8%, #e53222 45%, #8f0e05 100%);
+  box-shadow: 0 0 9px #e53222dd, 0 0 0 1px #6a0c04;
+  animation: gbs-pulse .7s ease-in-out infinite alternate;
+}
+.gbs-printer-led.error {
+  background: #a80c04;
+  box-shadow: 0 0 9px #bf3b30dd, 0 0 0 1px #5c0802;
+  animation: gbs-pulse .35s ease-in-out infinite alternate;
+}
 @keyframes gbs-pulse { to { opacity: .45; } }
+
+.gbs-printer-switch {
+  position: absolute;
+  width: 15.429%;
+  height: 7.965%;
+  z-index: 17;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(0);
+  transition: opacity .12s ease, transform .14s ease;
+}
+.gbs-printer-switch-on { left: 64.286%; top: 82.448%; transform: translateX(-2px); }
+.gbs-printer-switch-off { left: 62.571%; top: 82.891%; transform: translateX(2px); }
+.gbs-printer-scene.is-powered .gbs-printer-switch-on,
+.gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off {
+  opacity: 1;
+  transform: translateX(0);
+}
 
 .gbs-paper-stage {
   position: absolute;
