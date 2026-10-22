@@ -176,20 +176,37 @@ export function buildStyles() {
 }
 .gbs-gba-power-led {
   position: absolute;
-  left: 84.1%;
-  top: 16.4%;
-  width: 6px;
-  height: 6px;
+  left: 84.08%;
+  top: 18.36%;
+  width: 1.35%;
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: #3b0606;
-  box-shadow: 0 0 0 1px #260000, 0 1px 0 #ffffff22 inset;
+  background: radial-gradient(circle at 34% 28%, #7b3834 0 8%, #4a1717 42%, #1a0303 100%);
+  box-shadow:
+    0 1px 2px #12000099 inset,
+    0 0 0 1px #2a0000aa,
+    0 1px 0 #ffffff26 inset;
+  transform: translate(-50%, -50%);
   z-index: 16;
   pointer-events: none;
-  transition: background .15s ease, box-shadow .15s ease;
+  transition: box-shadow .15s ease, filter .15s ease;
 }
 .gbs-gba-power-led.on {
-  background: #ff2f3a;
-  box-shadow: 0 0 8px #ff2f3acc, 0 0 0 1px #6d0008, 0 1px 0 #fff5 inset;
+  background: radial-gradient(
+    circle at 34% 28%,
+    #fff8f8 0 7%,
+    #ffb6bc 14%,
+    #ff4052 36%,
+    #df001d 65%,
+    #730009 100%
+  );
+  box-shadow:
+    0 0 5px #ff2238d9,
+    0 0 12px #ff001f73,
+    0 0 0 1px #640008,
+    0 1px 1px #ffffffb8 inset,
+    0 -1px 2px #4a0006 inset;
+  filter: saturate(1.08);
 }
 .gbs-screen-mount {
   position: absolute;

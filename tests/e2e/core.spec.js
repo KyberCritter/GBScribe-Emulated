@@ -32,6 +32,34 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     expect(await page.evaluate(() => Boolean(window.__gbsLinkPort?.installed))).toBe(true);
   });
 
+  test('GBA power LED sits in the photographed socket and stays circular', async ({ page }) => {
+    const led = await page.evaluate(() => {
+      const root = document.querySelector('gbscribe-emulator').shadowRoot;
+      const photo = root.querySelector('.gbs-gba-photo').getBoundingClientRect();
+      const element = root.querySelector('.gbs-gba-power-led');
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {
+        centerX: (rect.left + rect.width / 2 - photo.left) / photo.width,
+        centerY: (rect.top + rect.height / 2 - photo.top) / photo.height,
+        widthRatio: rect.width / photo.width,
+        width: rect.width,
+        height: rect.height,
+        radius: style.borderRadius,
+        background: style.backgroundImage,
+        on: element.classList.contains('on'),
+      };
+    });
+
+    expect(led.centerX).toBeCloseTo(0.8408, 3);
+    expect(led.centerY).toBeCloseTo(0.1836, 3);
+    expect(led.widthRatio).toBeCloseTo(0.0135, 3);
+    expect(led.height).toBeCloseTo(led.width, 1);
+    expect(led.radius).toBe('50%');
+    expect(led.background).toContain('radial-gradient');
+    expect(led.on).toBe(true);
+  });
+
   test('Try a test print runs GBScribe, prints paper, tears and exports a PNG', async ({ page }) => {
     await page.locator('gbscribe-emulator [data-action="demo"]').first().click();
     await waitForPaper(page, 100, 45_000);

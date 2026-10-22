@@ -33,7 +33,7 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | PNG / BMP / PDF / print | Done |
 | Reusable link-port package | Done (`src/linkport/`) |
 | Node unit tests | Done (18) |
-| Playwright feature tests | Done (20) |
+| Playwright feature tests | Done (21) |
 | Blog embedding docs | Done |
 
 ## Requirements trace

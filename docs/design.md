@@ -17,7 +17,9 @@ comparison.
 - White D-pad on the left, white A/B on the right.
 - Two small white Start/Select buttons under the D-pad, with tiny labels for
   accessibility.
-- Red POWER LED at the top right.
+- Red POWER LED centered in the photographed socket at 84.08% / 18.36% of the
+  shell image. It is a 1.35%-wide circle with a radial specular highlight, so it
+  reads as a glossy LED at every responsive size.
 - Speaker grille at the bottom right.
 - Link Cable port on the **top edge**, right of centre.
 - The real 240×160 emulator canvas is inset in a dark screen frame inside the

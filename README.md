@@ -251,7 +251,7 @@ Konami Easter egg, QR print, drawing print, paper tearing, roll replacement,
 power cycling, exports, rebinding, the guided tour, and the reusable GPIO/byte
 link layers.
 
-The e2e suite has 20 tests; the Node suite has 18. The e2e tests read
+The e2e suite has 21 tests; the Node suite has 18. The e2e tests read
 GBScribe's real BG text map and FLASH save data through the emulator, so
 assertions cover actual ROM state rather than DOM mocks.
 
