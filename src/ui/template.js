@@ -35,7 +35,6 @@ export function buildTemplate() {
       <path data-cable-path d="M 40 8 C 52 1, 74 1, 87 14 S 100 44, 98 60" />
       <path class="highlight" data-cable-highlight d="M 40 8 C 52 1, 74 1, 87 14 S 100 44, 98 60" />
     </svg>
-    <div class="gbs-link-chip" aria-label="Link Cable connected">${icons.link} Link Cable</div>
     <section class="gbs-gba-column" aria-label="Game Boy Advance running GBScribe">
       <div class="gbs-gba-photo">
         <img class="gbs-gba-image" data-gba-image alt="" draggable="false">

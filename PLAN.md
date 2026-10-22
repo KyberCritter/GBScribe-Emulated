@@ -53,7 +53,7 @@ GB Camera / GB/GBC emulator that prints to the same printer model.
 | GitHub Pages section | Shadow-DOM custom element + iframe fallback |
 | MIT if deps allow | MIT; GBA.js BSD-2; font OFL; no GPL |
 | Document work/references | README, PLAN, docs, LICENSES |
-| Guided tutorial | First-load Yes/No prompt; spotlight/labels/arrows; auto-advances Start, mode select, typing, print, tear, and export after each user input; End tutorial and Guide replay controls |
+| Guided tutorial | First-load Yes/No prompt; spotlight/labels/arrows; on phones in portrait recommends rotating to landscape; auto-advances Start, mode select, typing, print, tear, and export after each user input; End tutorial and Guide replay controls |
 | Cookie / storage policy | First-load template with Accept/Reject; states that no data is sent to the server and every feature works without cookies; Privacy settings can reopen it |
 | Local save data | With consent, saves controls, sound, printed pages/current paper, guide completed/skipped state, and the GBScribe FLASH save in local browser storage; rejection clears demo data and disables writes |
 
@@ -196,8 +196,8 @@ Implementation notes:
 - The Link Cable starts at the GBA's **top link port** and ends at the
   printer's **right-side port**. The SVG path is measured from the actual DOM
   port rectangles at runtime, so it follows responsive layout.
-- On narrow screens the cable becomes a compact “Link Cable” chip between the
-  stacked devices.
+- On narrow screens the cable is still drawn: each end runs off the component
+  instead of joining the stacked devices directly.
 
 ## Tests
 
@@ -225,8 +225,8 @@ Implementation notes:
 - Reusable GPIO shim with a fake device, SI input, attach/detach, idempotence
 - Key rebinding, on-screen Start, reset defaults
 - Printer via ByteLinkAdapter
-- First-load guide prompt, eight-step auto-driven walkthrough, print/tear/export
-  result, and ending the tutorial early
+- First-load guide prompt, auto-driven walkthrough with a phone-rotation step in
+  portrait, print/tear/export result, and ending the tutorial early
 - Guide completion/skip remembered across reloads
 - First-load cookie policy, accept/reject, rejected writes, and accepted
   restoration of printed pages, current paper, controls, and the GBScribe save

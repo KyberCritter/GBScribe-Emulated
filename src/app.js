@@ -687,7 +687,6 @@ class GBScribeDemo {
   layoutCable() {
     const { stage, cable, cablePath, cableHighlight, portGba, portPrinter } = this.refs;
     if (!stage || !cable || !portGba || !portPrinter) return;
-    if (window.matchMedia('(max-width: 1040px)').matches) return;
     const stageRect = stage.getBoundingClientRect();
     const gbaRect = portGba.getBoundingClientRect();
     const printerRect = portPrinter.getBoundingClientRect();
@@ -696,6 +695,24 @@ class GBScribeDemo {
     const sy = gbaRect.top - stageRect.top + 1;
     const ex = printerRect.right - stageRect.left + 2;
     const ey = printerRect.top + printerRect.height / 2 - stageRect.top;
+    cable.setAttribute('viewBox', `0 0 ${stageRect.width.toFixed(1)} ${stageRect.height.toFixed(1)}`);
+    if (window.matchMedia('(max-width: 1040px)').matches) {
+      // With the devices stacked, there is no single path between the ports.
+      // Let each end of the cable leave its port and run off the component, so
+      // the two are still visibly connected somewhere out of view.
+      const exitY = Math.max(2, sy - 12);
+      const r = Math.max(2, Math.min(12, (sy - exitY) / 2, (sx + 40) / 2));
+      const d =
+        `M ${sx.toFixed(1)} ${sy.toFixed(1)} ` +
+        `L ${sx.toFixed(1)} ${(exitY + r).toFixed(1)} ` +
+        `Q ${sx.toFixed(1)} ${exitY.toFixed(1)} ${(sx - r).toFixed(1)} ${exitY.toFixed(1)} ` +
+        `L -40 ${exitY.toFixed(1)} ` +
+        `M ${(stageRect.width + 40).toFixed(1)} ${ey.toFixed(1)} ` +
+        `L ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+      cablePath.setAttribute('d', d);
+      cableHighlight.setAttribute('d', d);
+      return;
+    }
     const turnY = sy - 88;
     const cableX = ex + 34;
     const r = Math.min(22, Math.abs(sx - cableX) / 2, Math.abs(ey - turnY) / 2);
@@ -710,7 +727,6 @@ class GBScribeDemo {
       `L ${cableX.toFixed(1)} ${(ey - r).toFixed(1)} ` +
       `Q ${cableX.toFixed(1)} ${ey.toFixed(1)} ${(cableX - r).toFixed(1)} ${ey.toFixed(1)} ` +
       `L ${ex.toFixed(1)} ${ey.toFixed(1)}`;
-    cable.setAttribute('viewBox', `0 0 ${stageRect.width.toFixed(1)} ${stageRect.height.toFixed(1)}`);
     cablePath.setAttribute('d', d);
     cableHighlight.setAttribute('d', d);
   }
@@ -980,7 +996,16 @@ class GBScribeDemo {
   }
 
   createGuideSteps() {
-    return [
+    const steps = [];
+    if (window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
+      steps.push({
+        id: 'rotate',
+        title: 'Turn your phone sideways',
+        body: 'Rotate your phone horizontally to use the GBA. Landscape gives the screen and on-screen controls room to sit side by side, so the console is easier to see and reach.',
+        targets: () => ['.gbs-gba-photo'],
+      });
+    }
+    steps.push(
       {
         id: 'start',
         title: 'Open GBScribe',
@@ -1065,7 +1090,8 @@ class GBScribeDemo {
         body: 'The sheet is now in Printed pages. Use PNG, BMP, PDF, or Print in the export bar to keep it or send it to a real printer.',
         targets: () => ['.gbs-export'],
       },
-    ];
+    );
+    return steps;
   }
 
   async guideTap(action, hold = 90) {

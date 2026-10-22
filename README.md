@@ -45,7 +45,9 @@ The shells are the supplied hardware photos, cut out for the browser: a
 front-on crimson GBA with a white bezel and white controls, and a front-on
 beige printer with a smoked paper-roll cover, black brand band, and white
 output slot. The printer is on the left, the GBA on the right. The Link Cable leaves
-the **top** of the GBA and enters the **right side** of the printer. Paper feeds
+the **top** of the GBA and enters the **right side** of the printer. On narrow
+screens the devices stack and the cable runs off the edges of the demo, as if
+the connection continues out of view. Paper feeds
 out of the white slot and rises up over the printer, like the real thing. The
 print image is centered on the paper at the ~57% width measured from a real
 Game Boy Camera print.
@@ -70,6 +72,8 @@ Game Boy Camera print.
   export bar in order, with labels and arrows.
 - Performs the highlighted action after each tap, click, or key press, so the
   screen state advances with the instructions instead of ahead of them.
+- On phones held upright, starts by suggesting the device be rotated horizontally
+  so the GBA screen and on-screen controls have room side by side.
 - **End tutorial** stays in the top right while the guide is running. The
   **Guide** button in the header can replay it at any time.
 - Embedders can suppress the first-load prompt with

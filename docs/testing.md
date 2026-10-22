@@ -76,7 +76,8 @@ through the persistence format.
 - title-screen load of a saved document after reset
 - uppercase/symbol/shape keyboard layers
 - Resume and Drawing mode routing
-- mobile layout: stacking, no overflow, image loading, on-screen Start
+- mobile layout: stacking, no overflow, image loading, on-screen Start, and the
+  cable running off the component instead of a “Link Cable” chip
 
 `tests/e2e/cookies.spec.js`
 
@@ -92,6 +93,8 @@ through the persistence format.
 - first-load **Would you like to view a guide?** prompt and Yes/No choice
 - eight-step tour: Start, mode select, writing controls, menu print entry,
   print confirmation, paper, tear, and export
+- on a phone viewport in portrait, an extra first step recommends rotating the
+  device horizontally for the GBA
 - each step waits for a click or key press before the guide performs the
   highlighted action and moves on
 - the tutorial prints and tears a real sheet, then leaves the export controls

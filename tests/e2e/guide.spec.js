@@ -86,3 +86,26 @@ test('ending the tutorial early leaves the demo usable', async ({ page }) => {
   await expect(guide).toBeHidden();
   await expect(page.locator('gbscribe-emulator [data-action="guide"]')).toBeVisible();
 });
+
+test.describe('on a phone in portrait', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('the guide recommends rotating the phone for the GBA', async ({ page }) => {
+    await boot(page, '/?guide=1');
+    await page.locator('gbscribe-emulator [data-guide-yes]').click();
+
+    const guide = page.locator('gbscribe-emulator [data-guide]');
+    await expect(guide).toHaveAttribute('data-step', 'rotate', { timeout: 35_000 });
+    await expect(guide).toHaveAttribute('data-ready', 'true', { timeout: 35_000 });
+    await expect(page.locator('gbscribe-emulator [data-guide-title]')).toHaveText(
+      'Turn your phone sideways',
+    );
+    await expect(page.locator('gbscribe-emulator [data-guide-body]')).toContainText(
+      'Rotate your phone horizontally',
+    );
+
+    await page.keyboard.press('Space');
+    await expect(guide).toHaveAttribute('data-step', 'start', { timeout: 35_000 });
+    await page.locator('gbscribe-emulator [data-guide-end]').click();
+  });
+});

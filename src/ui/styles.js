@@ -372,21 +372,6 @@ export function buildStyles() {
   stroke-dasharray: 3 10;
   opacity: .65;
 }
-.gbs-link-chip {
-  display: none;
-  align-items: center;
-  gap: 7px;
-  justify-self: center;
-  padding: 5px 11px;
-  border: 1px dashed var(--gbs-line-strong);
-  border-radius: 99px;
-  background: #fffdf7;
-  color: var(--gbs-ink-faint);
-  font: 700 8px/1 ui-monospace, monospace;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-.gbs-link-chip svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; }
 
 /* ---------------------------------------------------------------- printer */
 .gbs-printer-column {
@@ -837,8 +822,6 @@ export function buildStyles() {
 /* -------------------------------------------------------------- responsive */
 @media (max-width: 1040px) {
   .gbs-stage { grid-template-columns: 1fr; gap: 18px; }
-  .gbs-cable { display: none; }
-  .gbs-link-chip { display: inline-flex; order: 1; }
   .gbs-gba-column { order: 0; }
   .gbs-printer-column { order: 2; max-width: 420px; margin: 0 auto; width: 100%; }
   .gbs-gba-photo { max-width: 700px; }
