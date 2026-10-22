@@ -35,6 +35,22 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     await waitForText(page, 'Printer: OK');
     await expect(page.locator('gbscribe-emulator')).toHaveAttribute('data-ready', '');
     expect(await page.evaluate(() => Boolean(window.__gbsLinkPort?.installed))).toBe(true);
+
+    const underGba = await page.evaluate(() => {
+      const root = document.querySelector('gbscribe-emulator').shadowRoot;
+      const photo = root.querySelector('.gbs-gba-photo').getBoundingClientRect();
+      const reset = root.querySelector('.gbs-under-gba [data-action="reset"]').getBoundingClientRect();
+      const sound = root.querySelector('.gbs-under-gba [data-action="mute"]').getBoundingClientRect();
+      return {
+        photoCenter: photo.left + photo.width / 2,
+        groupCenter: (reset.left + sound.right) / 2,
+        rowDelta: Math.abs(reset.top - sound.top),
+        gap: sound.left - reset.right,
+      };
+    });
+    expect(Math.abs(underGba.photoCenter - underGba.groupCenter)).toBeLessThan(2);
+    expect(underGba.rowDelta).toBeLessThan(1);
+    expect(underGba.gap).toBeGreaterThanOrEqual(0);
   });
 
   test('GBA power LED sits in the photographed socket and stays circular', async ({ page }) => {

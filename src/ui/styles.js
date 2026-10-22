@@ -208,6 +208,15 @@ export function buildStyles() {
     0 -1px 2px #4a0006 inset;
   filter: saturate(1.08);
 }
+.gbs-under-gba {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  width: 100%;
+  margin-top: 13px;
+}
 .gbs-screen-mount {
   position: absolute;
   left: 25.7%;
