@@ -133,7 +133,7 @@ the highlighted controls and the emulated state in sync. The steps are:
 6. The **Print document** entry in that menu.
 7. A to confirm the print.
 8. The tear tab and scissors.
-9. The PNG, BMP, PDF, and Print export bar.
+9. The PNG, BMP, PDF, and Print buttons on the printed page.
 
 **End tutorial** stays in the viewport's top right while the guide is active.
 The guide can be replayed from the header **Guide** button. Embeds can suppress

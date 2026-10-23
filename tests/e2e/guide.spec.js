@@ -42,7 +42,7 @@ test('guided tutorial walks through starting, writing, printing, tearing, and ex
   expect(await page.evaluate(() => window.__gbsTest.detached())).toBe(1);
   await expect(page.locator('gbscribe-emulator [data-pages]')).toBeVisible();
   await expect(page.locator('gbscribe-emulator .gbs-page-card')).toHaveCount(1);
-  await expect(page.locator('gbscribe-emulator [data-export="png"]')).toBeEnabled();
+  await expect(page.locator('gbscribe-emulator .gbs-page-card [data-page-action="png"]')).toBeEnabled();
   expect(await page.evaluate((key) => localStorage.getItem(key), GUIDE_KEY)).toBe('"completed"');
 
   await page.reload();

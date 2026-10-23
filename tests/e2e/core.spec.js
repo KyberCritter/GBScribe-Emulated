@@ -320,29 +320,7 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     expect(size.height).toBe(1024);
   });
 
-  test('PNG, BMP, PDF, and browser print exports are wired to the UI', async ({ page }) => {
-    const exportLayout = await page.evaluate(() => {
-      const root = document.querySelector('gbscribe-emulator').shadowRoot;
-      const bar = root.querySelector('.gbs-export');
-      const buttons = [...bar.querySelectorAll('[data-export]')];
-      const barRect = bar.getBoundingClientRect();
-      const rects = buttons.map((button) => button.getBoundingClientRect());
-      return {
-        labels: root.querySelectorAll('.gbs-export-label').length,
-        buttons: buttons.length,
-        barWidth: barRect.width,
-        sameRow: Math.max(...rects.map((rect) => rect.top)) - Math.min(...rects.map((rect) => rect.top)) < 1,
-        inside: rects.every((rect) => rect.left >= barRect.left - 1 && rect.right <= barRect.right + 1),
-        widths: rects.map((rect) => rect.width),
-      };
-    });
-    expect(exportLayout.labels).toBe(0);
-    expect(exportLayout.buttons).toBe(4);
-    expect(exportLayout.barWidth).toBeLessThan(400);
-    expect(exportLayout.sameRow).toBe(true);
-    expect(exportLayout.inside).toBe(true);
-    expect(Math.max(...exportLayout.widths) - Math.min(...exportLayout.widths)).toBeLessThan(2);
-
+  test('PNG, BMP, PDF, and browser print exports are wired to each printed page', async ({ page }) => {
     await page.evaluate(() => {
       const demo = window.__gbsDemo;
       for (let y = 0; y < 30; y++) demo.paperStore.appendRow(new Uint8Array(160).fill((y * 3) % 4));
@@ -350,9 +328,16 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     });
     await page.waitForTimeout(500);
 
+    const card = page.locator('gbscribe-emulator .gbs-page-card');
+    await expect(card).toHaveCount(1);
+    await expect(page.locator('gbscribe-emulator .gbs-export')).toHaveCount(0);
+    for (const action of ['png', 'bmp', 'pdf', 'print']) {
+      await expect(card.locator(`[data-page-action="${action}"]`)).toBeVisible();
+    }
+
     for (const kind of ['png', 'bmp', 'pdf']) {
       const downloadPromise = page.waitForEvent('download');
-      await page.locator(`gbscribe-emulator [data-export="${kind}"]`).click();
+      await card.locator(`[data-page-action="${kind}"]`).click();
       const download = await downloadPromise;
       expect(download.suggestedFilename()).toMatch(new RegExp(`\\.${kind}$`));
       const path = await download.path();
@@ -362,7 +347,7 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     }
 
     const popupPromise = page.waitForEvent('popup');
-    await page.locator('gbscribe-emulator [data-export="print"]').click();
+    await card.locator('[data-page-action="print"]').click();
     const popup = await popupPromise;
     await popup.waitForLoadState('domcontentloaded');
     await expect(popup.locator('img')).toHaveCount(1);

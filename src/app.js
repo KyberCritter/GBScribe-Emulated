@@ -260,7 +260,6 @@ class GBScribeDemo {
       powerButtons: qa('[data-action="power"]'),
       tearButtons: qa('[data-action="tear"]'),
       feedButtons: qa('[data-action="feed"]'),
-      exportButtons: qa('[data-export]'),
       pageButtons: qa('[data-page-action]'),
       dialogRollFill: q('[data-dialog-roll-fill]'),
       dialogRollPercent: q('[data-dialog-roll-percent]'),
@@ -492,9 +491,6 @@ class GBScribeDemo {
     }
     for (const button of $$('[data-action="mute"]')) {
       button.addEventListener('click', () => this.toggleMute(), { signal });
-    }
-    for (const button of $$('[data-export]')) {
-      button.addEventListener('click', () => this.exportAll(button.dataset.export), { signal });
     }
 
     const feed = $('.gbs-feed');
@@ -1042,8 +1038,8 @@ class GBScribeDemo {
       {
         id: 'export',
         title: 'Export your sheet',
-        body: 'The sheet is now in Printed pages. Use PNG, BMP, PDF, or Print in the export bar to keep it or send it to a real printer.',
-        targets: () => ['.gbs-export'],
+        body: 'The sheet is now in Printed pages. Use its PNG, BMP, PDF, or Print buttons to keep it or send it to a real printer.',
+        targets: () => ['.gbs-page-actions'],
       },
     );
     return steps;
@@ -1586,21 +1582,6 @@ class GBScribeDemo {
     this.exportSheets([sheet], action);
   }
 
-  async exportAll(kind) {
-    const sheets = this.paperStore.exportableSheets();
-    if (!sheets.length) {
-      this.toast('Print something first — the export tray is empty.');
-      return;
-    }
-    if (kind === 'print') {
-      if (!printSheets(sheets, { title: 'GBScribe print' })) {
-        this.toast('Your browser blocked the print window. Allow pop-ups and try again.', true);
-      }
-      return;
-    }
-    await this.exportSheets(sheets, kind);
-  }
-
   async exportSheets(sheets, kind) {
     try {
       const stamp = timestamp();
@@ -1665,10 +1646,6 @@ class GBScribeDemo {
     const noPaper = !this.paperStore.hasPaper;
     for (const button of this.refs.tearButtons) {
       button.disabled = noPaper;
-    }
-    const nothingToExport = this.paperStore.exportableSheets().length === 0;
-    for (const button of this.refs.exportButtons) {
-      button.disabled = nothingToExport;
     }
     this.refs.gbaPower?.classList.toggle('on', this.loaded);
     this.updatePaperDialog();

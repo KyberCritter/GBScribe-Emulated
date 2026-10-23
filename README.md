@@ -68,7 +68,7 @@ Game Boy Camera print.
 - On first load, asks **"Would you like to view a guide?"** with Yes/No choices.
 - Highlights Start, the D-pad and A button, the writing controls, the
   **Print document** menu entry, the printer, the tear controls, and the
-  export bar in order, with labels and arrows.
+  printed page's export buttons in order, with labels and arrows.
 - Performs the highlighted action after each tap, click, or key press, so the
   screen state advances with the instructions instead of ahead of them.
 - On phones held upright, starts by suggesting the device be rotated horizontally
