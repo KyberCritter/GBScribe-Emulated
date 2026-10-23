@@ -103,7 +103,8 @@ export function buildStyles() {
 }
 .gbs-title h2 .gbs-x { color: var(--gbs-crimson); padding: 0 .18em; }
 .gbs-title p {
-  max-width: 62ch;
+  /* Let the intro subtitle use the full header width. */
+  max-width: 100%;
   margin: 10px 0 0;
   color: var(--gbs-ink-soft);
   font-size: 13.5px;
@@ -643,32 +644,7 @@ export function buildStyles() {
   background: #fffdf7;
   box-shadow: 0 2px 0 #fff inset, 0 8px 20px -18px #3d3322;
 }
-.gbs-tools, .gbs-export { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.gbs-export {
-  flex: 0 0 320px;
-  width: 320px;
-  max-width: 100%;
-  gap: 0;
-  border: 1px solid var(--gbs-line);
-  border-radius: 9px;
-  overflow: hidden;
-}
-.gbs-export .gbs-btn {
-  flex: 1 1 0;
-  min-width: 0;
-  justify-content: center;
-  border: 0;
-  border-left: 1px solid var(--gbs-line);
-  border-radius: 0;
-  box-shadow: none;
-  min-height: 32px;
-  padding: 0 8px;
-  background: transparent;
-  font-size: 11px;
-}
-.gbs-export .gbs-btn:first-child { border-left: 0; }
-.gbs-export .gbs-btn:hover { background: #00000007; }
-.gbs-export .gbs-btn:active { transform: none; }
+.gbs-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
 /* ------------------------------------------------------------------ pages */
 .gbs-pages {
@@ -859,8 +835,6 @@ export function buildStyles() {
   .gbs-toolbar { align-items: stretch; }
   .gbs-tools { width: 100%; }
   .gbs-tools .gbs-btn { flex: 1 1 auto; }
-  .gbs-export { flex: 1 1 100%; width: 100%; justify-content: space-between; }
-  .gbs-export .gbs-btn { flex: 1; }
   .gbs-paper-panel { grid-template-columns: 1fr; }
   .gbs-paper-visual { height: 90px; }
   .gbs-toast { position: fixed; top: auto; bottom: 12px; }

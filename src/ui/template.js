@@ -104,12 +104,6 @@ export function buildTemplate() {
       <button class="gbs-btn" data-action="paper" type="button">${icons.roll}<span>Replace paper</span></button>
       <button class="gbs-btn" data-action="power" type="button">${icons.power}<span>Printer on/off</span></button>
     </div>
-    <div class="gbs-export">
-      <button class="gbs-btn" data-export="png" type="button">PNG</button>
-      <button class="gbs-btn" data-export="bmp" type="button">BMP</button>
-      <button class="gbs-btn" data-export="pdf" type="button">PDF</button>
-      <button class="gbs-btn" data-export="print" type="button">Print</button>
-    </div>
   </div>
 
   <section class="gbs-pages" data-pages hidden>
@@ -144,7 +138,7 @@ export function buildTemplate() {
         </div>
         <div class="gbs-help-card">
           <h4>4 · Keep it</h4>
-          <p>Every sheet is stored at the printer's native 160-dot width. Export the current output as PNG, BMP, or a multi-page PDF, or send it to your real printer.</p>
+          <p>Every sheet is stored at the printer's native 160-dot width. Each saved page has its own PNG, BMP, PDF, and Print buttons, so you can keep the output or send it to your real printer.</p>
         </div>
       </div>
       <h4>Controls at a glance</h4>
