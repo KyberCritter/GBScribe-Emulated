@@ -31,6 +31,10 @@ SWITCH_ON_BOX = (448, 1071, 568, 1248)
 SWITCH_OFF_BOX = (429, 1071, 548, 1249)
 SWITCH_RADIUS = 7
 SWITCH_FEATHER = 2
+# The exposed ribbed track left of the ON cap, mirrored into the right side of
+# the recess that the cap uncovers when it slides left to OFF.
+SWITCH_TRACK_BOX = (428, 1064, 447, 1254)
+SWITCH_TRACK_TARGET = (549, 1064)
 
 
 def cutout(source: Path, width: int, rotate: int = 0) -> Image.Image:
@@ -100,6 +104,13 @@ def remove_switch(image: Image.Image) -> Image.Image:
     blended = source * (1 - feather) + filled * feather
     result = np.dstack([np.clip(blended, 0, 255), original_alpha]).astype(np.uint8)
     return Image.fromarray(result, "RGBA")
+
+
+def add_switch_track(image: Image.Image) -> None:
+    """Mirror the exposed ribbed track into the right side of the recess."""
+    x0, y0, x1, y1 = SWITCH_TRACK_BOX
+    track = image.crop((x0, y0, x1, y1)).transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    image.alpha_composite(track, SWITCH_TRACK_TARGET)
 
 
 def switch_cutout(
@@ -177,6 +188,7 @@ def main() -> None:
     empty_printer_slot(printer)
     switch_on = switch_cutout(printer, SWITCH_ON_BOX)
     printer_base = remove_switch(printer)
+    add_switch_track(printer_base)
     save(printer_base, "printer")
     save(switch_on, "printer-switch-on")
 

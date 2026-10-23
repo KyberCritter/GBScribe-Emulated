@@ -40,10 +40,12 @@ comparison.
   hit zone is centered on the photographed button at 24.1% / 84.8% of the
   printer image.
 - The POWER switch is the whole rounded cap around the circular bump, so the
-  POWER label rocks with it. It is a pair of 120×177 cutouts over one body
+  POWER label moves with it. It is a pair of 120×177 cutouts over one body
   image: the ON cap comes from the power-on photo, the OFF cap from the
-  power-off photo. Toggling power crossfades the two layers with a short
-  vertical nudge; the body, ON/OFF labels, and recess never move.
+  power-off photo. The cap sits on the right for ON and slides left for OFF,
+  uncovering the darker ribbed track on the opposite side. Toggling power
+  crossfades the two layers with a short horizontal nudge; the body, ON/OFF
+  labels, and recess never move.
 - The BATT pilot is a red LED, matching the hardware, not a green status light.
 - Link Cable port on the **right side**.
 

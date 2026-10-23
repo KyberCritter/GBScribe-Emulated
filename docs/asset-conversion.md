@@ -67,14 +67,16 @@ bump, including the POWER label, not just the bump. The script therefore:
    (448, 1071)–(568, 1248).
 2. Paints the cap's socket out of the base shell with a quadratic panel fit,
    so the body has no cap baked in.
-3. Cuts the OFF cap from the power-off photo at (429, 1071)–(548, 1249),
+3. Mirrors the photographed left-hand ribbed track into the right side of the
+   recess, where the cap uncovers it in the OFF position.
+4. Cuts the OFF cap from the power-off photo at (429, 1071)–(548, 1249),
    scales it to the ON cap's 120×177 size, and color-matches its surrounding
-   panel to the cleaned base.
+   panel to the cleaned base. The OFF cap keeps its own left position.
 
 `src/ui/template.js` stacks the two 120×177 cap cutouts over the single
 base shell. `.gbs-printer-scene.is-powered` fades the ON cap in and the OFF cap
-out over 120 ms, with a short vertical nudge, so the whole switch rocks and the
-rectangle visibly moves while the body and ON/OFF labels stay put.
+out over 120 ms, with a short horizontal nudge, so the whole switch slides
+left for OFF and right for ON while the body and ON/OFF labels stay put.
 
 ## 5. Composite the GBA screen
 
@@ -122,8 +124,8 @@ The printer uses the same technique on its 700×1356 cutout:
 | FEED | centre 24.1%, 84.8%; hit zone 25.4% × 14% |
 | POWER panel | left 60.7%, top 78.7%, width 21.5%, height 13.1% |
 | Switch cap ON | left 64%, top 78.982%, 120×177 px layer |
-| Switch cap OFF | left 64%, top 78.982%, 120×177 px layer |
-| Status LED | centre 88.9%, 50.2% (red) |
+| Switch cap OFF | left 61.286%, top 78.982%, 120×177 px layer |
+| Status LED | centre 89.9%, 50.1%; width 4.6% (red) |
 | Link port | right edge, 61% down |
 | Paper stage | left 19%, top 1.5%, width 62%, height 42.5% |
 

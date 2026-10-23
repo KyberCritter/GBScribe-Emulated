@@ -15,6 +15,7 @@ author's site, replace the photos with your own or keep the attribution.
 The printer construction is based on the supplied front-on photos: smoked roll
 cover, black brand band, dark paper exit slot, red FEED button, gray POWER
 switch, Nintendo oval, and a right-side Link Cable port. The base shell is the
-power-on photo with its switch cap removed; the two whole-cap cutouts are layered
-over the same panel so only the switch visibly changes between ON and OFF. The
+power-on photo with its switch cap removed and the exposed ribbed track mirrored
+into the right side of the recess; the two whole-cap cutouts are layered over
+the same panel so only the switch visibly changes between ON and OFF. The
 printer's BATT pilot is drawn red, like the hardware LED.

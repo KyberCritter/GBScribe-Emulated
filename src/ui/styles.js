@@ -473,17 +473,17 @@ export function buildStyles() {
   z-index: 17;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(0);
+  transform: translateX(0);
   transition: opacity .12s ease, transform .14s ease;
 }
-.gbs-printer-switch-on { left: 64%; top: 78.982%; transform: translateY(-4px); }
-.gbs-printer-switch-off { left: 64%; top: 78.982%; transform: translateY(4px); }
+.gbs-printer-switch-on { left: 64%; top: 78.982%; transform: translateX(4px); }
+.gbs-printer-switch-off { left: 61.286%; top: 78.982%; transform: translateX(-4px); }
 .gbs-printer-scene.is-powered .gbs-printer-switch-on,
 .gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off {
   opacity: 1;
 }
-.gbs-printer-scene.is-powered .gbs-printer-switch-on { transform: translateY(-2px); }
-.gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off { transform: translateY(2px); }
+.gbs-printer-scene.is-powered .gbs-printer-switch-on { transform: translateX(0); }
+.gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off { transform: translateX(0); }
 
 .gbs-paper-stage {
   position: absolute;

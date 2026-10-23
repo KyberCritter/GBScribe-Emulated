@@ -101,9 +101,9 @@ Game Boy Camera print.
 - Feed-before/feed-after margins and multi-copy prints.
 - Portrait printer based on the hardware photo: smoked roll cover, black brand
   band, dark paper slot, red FEED button, gray POWER switch.
-- The POWER switch is the whole cap around its bump; it rocks between ON and
-  OFF on the photographed panel, with only the cap changing. The BATT pilot is
-  red like the hardware LED.
+- The POWER switch is the whole cap around its bump; it slides left for OFF
+  and right for ON on the photographed panel, with only the cap changing. The
+  BATT pilot is red like the hardware LED.
 - **Slow, visible paper feed** from the slot — one dot row at a time,
   rising up over the printer front.
 - Paper is 281 dots wide with the 160-dot print centered at ~57%, matching a

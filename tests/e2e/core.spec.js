@@ -39,7 +39,13 @@ test('the POWER layer is the whole cap, not just the circular bump', async ({ pa
       height: onBox.height / scene.height,
       sourceAspect: on.naturalHeight / on.naturalWidth,
       sameWidth: Math.abs(onBox.width - offBox.width) < 0.5,
-      sameLeft: Math.abs(onBox.left - offBox.left) < 0.5,
+      travelLeft:
+        (parseFloat(getComputedStyle(on).left) - parseFloat(getComputedStyle(off).left)) /
+        scene.width,
+      sameTop:
+        Math.abs(
+          parseFloat(getComputedStyle(on).top) - parseFloat(getComputedStyle(off).top),
+        ) < 0.5,
     };
   });
   expect(geometry.width).toBeGreaterThan(0.16);
@@ -47,7 +53,10 @@ test('the POWER layer is the whole cap, not just the circular bump', async ({ pa
   // A disc would be square; the cap is noticeably taller than it is wide.
   expect(geometry.sourceAspect).toBeGreaterThan(1.2);
   expect(geometry.sameWidth).toBe(true);
-  expect(geometry.sameLeft).toBe(true);
+  // OFF is to the left of ON, and the switch does not drop downward.
+  expect(geometry.travelLeft).toBeGreaterThan(0.02);
+  expect(geometry.travelLeft).toBeLessThan(0.05);
+  expect(geometry.sameTop).toBe(true);
 });
 
 test.describe('GBScribe emulator shell and Game Boy Printer', () => {
