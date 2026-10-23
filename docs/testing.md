@@ -58,7 +58,7 @@ through the persistence format.
 - GBA power LED alignment with the photographed socket, circular shape, and
   radial specular highlight
 - printer starts ON, switch disconnects/reconnects it, and GBScribe reports disconnected/OK
-- guided test print, paper rendering, tear, PNG download, and per-page delete
+- paper rendering, tear, PNG download, and per-page delete
 - drag-to-tear, feed hit-zone alignment, hold-to-feed without text selection,
   roll replacement, cover, power cycle + disconnection
 - printer image stays still while idle and feeding; feeding state still reports

@@ -75,25 +75,6 @@ export function buildStyles() {
   border-bottom: 1px dashed var(--gbs-line-strong);
 }
 
-.gbs-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 9px;
-  font-size: 10px;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--gbs-crimson);
-  font-weight: 700;
-}
-.gbs-kicker::before {
-  content: "";
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--gbs-crimson);
-  box-shadow: 0 0 0 3px #a51f3f1c;
-}
-
 .gbs-title h2 {
   margin: 0;
   font-family: "GBS Pixel", ui-monospace, monospace;

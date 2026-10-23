@@ -18,12 +18,10 @@ export function buildTemplate() {
 <div class="gbs-root" data-root>
   <header class="gbs-header">
     <div class="gbs-title">
-      <span class="gbs-kicker">Interactive hardware demo</span>
       <h2>GBScribe <span class="gbs-x">×</span> Game Boy Printer</h2>
       <p>Try GBScribe in your browser! Write or draw, then print to an emulated Game Boy Printer. You can even download your "prints" or print them to a real printer.</p>
     </div>
     <div class="gbs-header-actions">
-      <button class="gbs-btn is-primary" data-action="demo" type="button">${icons.sparkle}<span>Try a test print</span></button>
       <button class="gbs-btn" data-action="guide" type="button">${icons.sparkle}<span>Guide</span></button>
       <button class="gbs-btn" data-action="help" type="button">${icons.help}<span>How it works</span></button>
       <button class="gbs-btn" data-action="controls" type="button">${icons.gamepad}<span>Controls</span></button>
@@ -162,7 +160,6 @@ export function buildTemplate() {
     <div class="gbs-dialog-footer">
       <button class="gbs-btn is-quiet" data-action="privacy" type="button">Privacy settings</button>
       <span class="gbs-spacer"></span>
-      <button class="gbs-btn is-primary" data-action="demo" type="button">${icons.sparkle}<span>Run the test print</span></button>
       <button class="gbs-btn" data-close type="button">Close</button>
     </div>
   </dialog>

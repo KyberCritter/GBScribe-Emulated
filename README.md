@@ -61,7 +61,6 @@ Game Boy Camera print.
 - Keyboard controls, fully remappable and saved locally with permission.
 - GBA saves (GBScribe's FLASH1M save slots) persist in the browser with
   permission.
-- Guided **Try a test print** button.
 - A first-load guide that can walk through the whole app, plus a **Guide** button
   to replay it.
 
@@ -219,8 +218,6 @@ the demo to rebind any button; **Reset defaults** restores the table above.
 4. Choose **Print document** or **Print drawing**, then **A: Print**.
 5. Drag the paper up or use the scissors when it is done.
 6. Export the sheet, replace the roll, or power-cycle the printer.
-
-Or click **Try a test print** to watch the whole chain automatically.
 
 ## Building the ROM
 
