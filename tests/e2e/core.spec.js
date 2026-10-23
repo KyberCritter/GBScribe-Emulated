@@ -13,15 +13,16 @@ import {
 
 test('printer starts on and the power switch disconnects it', async ({ page }) => {
   await boot(page);
-  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
+  const power = page.locator('gbscribe-emulator .gbs-hit-power');
+  await expect(power).toHaveAttribute('aria-pressed', 'true');
   await waitForText(page, 'Printer: OK');
 
-  await page.locator('gbscribe-emulator .gbs-hit-power').click();
-  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
+  await power.click();
+  await expect(power).toHaveAttribute('aria-pressed', 'false');
   await waitForText(page, 'Printer: disconnected');
 
-  await page.locator('gbscribe-emulator .gbs-hit-power').click();
-  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
+  await power.click();
+  await expect(power).toHaveAttribute('aria-pressed', 'true');
   await waitForText(page, 'Printer: OK');
 });
 
@@ -263,13 +264,16 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
       })))
       .toEqual({ roll: 0, cover: false, feedDisabled: true });
     await page.locator('gbscribe-emulator [data-paper-replace]').click();
-    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
-    expect(await page.evaluate(() => window.__gbsDemo.printer.rollRows)).toBe(4000);
+    await expect
+      .poll(() => page.evaluate(() => window.__gbsDemo.printer.rollRows))
+      .toBe(4000);
     await page.locator('gbscribe-emulator [data-dialog="paper"] [data-close]').first().click();
 
     // Power off -> the ROM's real INQUIRY path reports disconnected.
     await page.locator('gbscribe-emulator [data-action="power"]').first().click();
-    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
+    await expect(
+      page.locator('gbscribe-emulator .gbs-hit-power'),
+    ).toHaveAttribute('aria-pressed', 'false');
     await page.waitForTimeout(250);
     expect(
       await page.evaluate(() => {

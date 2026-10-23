@@ -94,11 +94,6 @@ export function buildTemplate() {
         </div>
         <button class="gbs-scissors" data-action="tear" type="button" aria-label="Cut the paper off with scissors" disabled>${icons.scissors}</button>
       </div>
-
-      <div class="gbs-statusbar" data-statusbar aria-live="polite">
-        <span class="gbs-status-led" data-status-led></span>
-        <span data-status>Printer on</span>
-      </div>
     </section>
   </div>
 

@@ -225,9 +225,6 @@ class GBScribeDemo {
       paperScroll: q('[data-paper-scroll]'),
       paperEmpty: q('[data-paper-empty]'),
       tearTab: q('[data-tear-tab]'),
-      statusbar: q('[data-statusbar]'),
-      status: q('[data-status]'),
-      statusLed: q('[data-status-led]'),
       pilot: q('[data-pilot]'),
       switchOn: q('[data-switch-on]'),
       switchOff: q('[data-switch-off]'),
@@ -1653,28 +1650,6 @@ class GBScribeDemo {
     const paperOut = printer.rollRows <= 0;
     const coverOpen = !printer.coverClosed;
 
-    let status = 'Printer on';
-    let ledClass = '';
-    if (!powered) {
-      status = 'Printer off';
-      ledClass = 'off';
-    } else if (!coverOpen && paperOut) {
-      status = 'Out of paper — replace the roll';
-      ledClass = 'error';
-    } else if (coverOpen) {
-      status = 'Cover open';
-      ledClass = 'error';
-    } else if (printing) {
-      status = `Printing ${Math.round(printer.jobProgress * 100)}%`;
-      ledClass = 'busy';
-    } else if (feeding) {
-      status = 'Feeding paper';
-      ledClass = 'busy';
-    } else if (printer.rollRows <= printer.lowPaperRows) {
-      status = 'Paper low';
-    }
-    this.refs.status.textContent = status;
-    this.refs.statusLed.className = `gbs-status-led ${ledClass}`.trim();
     this.refs.rollFill.style.width = `${printer.paperPercent.toFixed(1)}%`;
     this.refs.rollLabel.textContent = `${Math.round(printer.paperPercent)}%`;
 

@@ -305,16 +305,16 @@ export function buildStyles() {
 .gbs-hit-l {
   left: 0;
   top: 0;
-  width: 26%;
-  height: 20%;
+  width: 22.1%;
+  height: 13.6%;
   border-radius: 50%;
   transform: rotate(-20deg);
 }
 .gbs-hit-r {
   right: 0;
   top: 0;
-  width: 26%;
-  height: 20%;
+  width: 22.1%;
+  height: 13.6%;
   border-radius: 50%;
   transform: rotate(20deg);
 }
@@ -425,7 +425,7 @@ export function buildStyles() {
 }
 .gbs-hit-power {
   left: 60.7%;
-  top: 78.7%;
+  top: 78.96%;
   width: 20.4%;
   height: 13.1%;
   border-radius: 7px;
@@ -627,25 +627,6 @@ export function buildStyles() {
 .gbs-scissors svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .gbs-scissors:hover { background: #fff; color: var(--gbs-crimson); }
 .gbs-scissors[disabled] { opacity: .35; pointer-events: none; }
-
-.gbs-statusbar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: 8px;
-  margin-top: 18px;
-  padding: 7px 10px;
-  border: 1px solid var(--gbs-line);
-  border-radius: 8px;
-  background: #fffdf7b8;
-  font-size: 11px;
-  color: var(--gbs-ink-soft);
-}
-.gbs-status-led { width: 7px; height: 7px; border-radius: 50%; background: var(--gbs-green); box-shadow: 0 0 6px #3f9b5780; flex: 0 0 auto; }
-.gbs-status-led.busy { background: var(--gbs-amber); box-shadow: 0 0 7px #e8a51bcc; }
-.gbs-status-led.error { background: var(--gbs-red); box-shadow: 0 0 7px #bf3b30cc; }
-.gbs-status-led.off { background: #9b9488; box-shadow: none; }
 
 /* ---------------------------------------------------------------- toolbar */
 .gbs-toolbar {
