@@ -30,4 +30,4 @@ cp GBScribe.gba ../../assets/roms/GBScribe.gba
 The ROM is loaded by the page via `fetch`; it is never uploaded anywhere.
 
 GBScribe is © Scott Ratchford and is licensed under the MIT License. See
-[`../../LICENSES/gbscribe-MIT.txt`](../../LICENSES/gbscribe-MIT.txt).
+[`../../LICENSE.md`](../../LICENSE.md).

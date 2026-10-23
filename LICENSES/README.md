@@ -4,14 +4,17 @@ This project is MIT licensed (see [`../LICENSE.md`](../LICENSE.md)). The
 third-party components below are compatible with that choice; none are GNU
 copyleft licenses.
 
+This directory holds license texts that have no other home in the repository.
+Where a component ships its own license file, the table links to that copy.
+
 | Component | Version / source | License | File |
 | --- | --- | --- | --- |
-| GBScribe ROM | master `fb78d59` (built from source) | MIT | [`gbscribe-MIT.txt`](gbscribe-MIT.txt) |
-| AdvancePrint | protocol/job semantics from the GBScribe printer layer | MIT | [`gbscribe-MIT.txt`](gbscribe-MIT.txt) |
+| GBScribe ROM | master `fb78d59` (built from source) | MIT | [`../LICENSE.md`](../LICENSE.md) |
+| AdvancePrint | protocol/job semantics from the GBScribe printer layer | MIT | [`../LICENSE.md`](../LICENSE.md) |
 | mGBA | mgba-emu/mgba, compiled to WebAssembly from the wasm platform | MPL-2.0 | [`mgba-MPL-2.0.txt`](mgba-MPL-2.0.txt) |
 | SDL 2 | libsdl-org/SDL, statically linked into the WebAssembly build | zlib | [`sdl-zlib.txt`](sdl-zlib.txt) |
-| GBA.js | endrift/gbajs, vendored for the reusable link-port module | BSD-2-Clause | [`gbajs-BSD-2-Clause.txt`](gbajs-BSD-2-Clause.txt) |
-| Press Start 2P | Google Fonts, latin WOFF2 subset | SIL Open Font License 1.1 | [`press-start-2p-OFL-1.1.txt`](press-start-2p-OFL-1.1.txt) |
+| GBA.js | endrift/gbajs, vendored for the reusable link-port module | BSD-2-Clause | [`../vendor/gbajs/COPYING`](../vendor/gbajs/COPYING) |
+| Press Start 2P | Google Fonts, latin WOFF2 subset | SIL Open Font License 1.1 | [`../assets/fonts/OFL.txt`](../assets/fonts/OFL.txt) |
 | Hardware photos | Supplied by Scott Ratchford | Author's own photographs | [`../assets/img/README.md`](../assets/img/README.md) |
 
 mGBA is distributed under the [Mozilla Public License 2.0](https://github.com/mgba-emu/mgba/blob/master/LICENSE). The vendored
