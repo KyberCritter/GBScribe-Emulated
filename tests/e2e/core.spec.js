@@ -115,6 +115,58 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
     expect(led.on).toBe(true);
   });
 
+  test('L/R trigger zones cover the whole shoulders', async ({ page }) => {
+    const geometry = await page.evaluate(() => {
+      const root = document.querySelector('gbscribe-emulator').shadowRoot;
+      const photo = root.querySelector('.gbs-gba-photo').getBoundingClientRect();
+      const left = root.querySelector('.gbs-hit-l');
+      const right = root.querySelector('.gbs-hit-r');
+      return {
+        leftWidth: left.offsetWidth / photo.width,
+        leftHeight: left.offsetHeight / photo.height,
+        rightWidth: right.offsetWidth / photo.width,
+        rightHeight: right.offsetHeight / photo.height,
+        leftPoint: {
+          x: photo.left + photo.width * 0.06,
+          y: photo.top + photo.height * 0.08,
+        },
+        rightPoint: {
+          x: photo.left + photo.width * 0.94,
+          y: photo.top + photo.height * 0.08,
+        },
+      };
+    });
+
+    expect(geometry.leftWidth).toBeGreaterThan(0.2);
+    expect(geometry.leftHeight).toBeGreaterThan(0.12);
+    expect(geometry.rightWidth).toBeGreaterThan(0.2);
+    expect(geometry.rightHeight).toBeGreaterThan(0.12);
+
+    // Press the outer, lower part of each photographed trigger, not just the
+    // old narrow strip along the top edge.
+    for (const [point, bit] of [
+      [geometry.leftPoint, 9],
+      [geometry.rightPoint, 8],
+    ]) {
+      await page.mouse.move(point.x, point.y);
+      await page.mouse.down();
+      expect(
+        await page.evaluate(
+          (bit) => (window.__gbsDemo.gba.keypad.currentDown & (1 << bit)) === 0,
+          bit,
+        ),
+      ).toBe(true);
+      await page.mouse.up();
+      await page.waitForTimeout(80);
+      expect(
+        await page.evaluate(
+          (bit) => (window.__gbsDemo.gba.keypad.currentDown & (1 << bit)) !== 0,
+          bit,
+        ),
+      ).toBe(true);
+    }
+  });
+
   test('Try a test print runs GBScribe, prints paper, tears and exports a PNG', async ({ page }) => {
     await page.locator('gbscribe-emulator [data-action="demo"]').first().click();
     await waitForPaper(page, 100, 45_000);

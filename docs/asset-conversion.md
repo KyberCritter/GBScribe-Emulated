@@ -107,14 +107,14 @@ The photo buttons are not redrawn. Transparent buttons sit over them:
 | B | left 77.9%, top 37.7%, width 8%, height 13.4% |
 | Start | left 16.72%, top 60.56%, width 5.4%, height 5.4% |
 | Select | left 16.55%, top 70.48%, width 5.4%, height 5.4% |
-| L/R | rotated oval edge zones following the shoulder line |
+| L/R | large rotated ovals over the shoulders: 26% x 20% at the top corners |
 | Power LED | centre 81.83%, 16.79%, width 2.7% |
 | Link port | synthetic connector at left 37.5%, top edge |
 
 The Start and Select hit zones are larger than the photographed domes for
-touch. The top shoulder buttons and the physical link port are cropped out of
-this photo, so L/R remain invisible edge zones and the cable connector is still
-a small drawn port.
+touch. The top shoulder buttons run along the photo's cropped top edge, so L/R
+use large transparent oval zones (26% x 20%) covering the whole visible
+triggers; the physical link port is still a small drawn port.
 
 The printer uses the same technique on its 700×1356 cutout:
 

@@ -303,20 +303,20 @@ export function buildStyles() {
 .gbs-hit-start { left: 16.72%; top: 60.56%; width: 5.4%; height: auto; aspect-ratio: 1; }
 .gbs-hit-select { left: 16.55%; top: 70.48%; width: 5.4%; height: auto; aspect-ratio: 1; }
 .gbs-hit-l {
-  left: 5%;
-  top: 5%;
-  width: 15%;
-  height: 5%;
+  left: 0;
+  top: 0;
+  width: 26%;
+  height: 20%;
   border-radius: 50%;
-  transform: rotate(-16deg);
+  transform: rotate(-20deg);
 }
 .gbs-hit-r {
-  right: 4.5%;
-  top: 5%;
-  width: 15%;
-  height: 5%;
+  right: 0;
+  top: 0;
+  width: 26%;
+  height: 20%;
   border-radius: 50%;
-  transform: rotate(16deg);
+  transform: rotate(20deg);
 }
 
 .gbs-dpad-photo {
