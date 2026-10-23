@@ -242,6 +242,11 @@ cp GBScribe.gba ../../assets/roms/GBScribe.gba
 `tools/build-rom.sh` wraps that flow. See
 [`assets/roms/README.md`](assets/roms/README.md) for provenance.
 
+CI rebuilds the ROM from the recorded upstream commit whenever `assets/roms/`
+changes and fails if the rebuilt binary's SHA-256 differs from the committed
+one. See
+[`.github/workflows/build-rom.yml`](.github/workflows/build-rom.yml).
+
 ## Architecture
 
 | Layer | Location | Notes |

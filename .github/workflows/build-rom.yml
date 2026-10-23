@@ -1,0 +1,91 @@
+name: Build ROM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "assets/roms/**"
+      - "tools/build-rom.sh"
+      - ".github/workflows/build-rom.yml"
+  pull_request:
+    paths:
+      - "assets/roms/**"
+      - "tools/build-rom.sh"
+      - ".github/workflows/build-rom.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-rom-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEVKITARM_IMAGE: devkitpro/devkitarm:20260610
+  UPSTREAM_REPO: https://github.com/KyberCritter/GBScribe.git
+
+jobs:
+  build-rom:
+    name: Build GBScribe.gba
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out upstream GBScribe at the recorded commit
+        run: |
+          set -euo pipefail
+          commit="$(tr -d '[:space:]' < assets/roms/GBScribe.commit)"
+          git init --quiet upstream
+          git -C upstream remote add origin "$UPSTREAM_REPO"
+          git -C upstream fetch --quiet --depth 1 origin "$commit"
+          git -C upstream checkout --quiet --detach FETCH_HEAD
+          echo "Building GBScribe $commit"
+
+      - name: Build ROM
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          docker run --rm \
+            -v "$PWD/upstream:/work" \
+            -w /work \
+            "$DEVKITARM_IMAGE" \
+            make
+          cp upstream/GBScribe.gba dist/GBScribe.gba
+          (cd dist && sha256sum GBScribe.gba | awk '{print toupper($1)}' > GBScribe.sha256)
+
+      - name: Check the build against the committed ROM
+        run: |
+          set -euo pipefail
+          built="$(cat dist/GBScribe.sha256)"
+          recorded="$(tr -d '[:space:]' < assets/roms/GBScribe.sha256)"
+          commit="$(cat assets/roms/GBScribe.commit)"
+          {
+            echo "### GBScribe ROM"
+            echo ""
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| Source commit | \`$commit\` |"
+            echo "| SHA-256 | \`$built\` |"
+            echo "| Matches committed ROM | $([ "$built" = "$recorded" ] && echo yes || echo no) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Built:    $built"
+          echo "Recorded: $recorded"
+          if [ "$built" != "$recorded" ]; then
+            echo "::error title=ROM hash differs::Rebuilt ROM is $built but the committed ROM is $recorded. Rebuild assets/roms/GBScribe.gba and update GBScribe.sha256."
+            exit 1
+          fi
+
+      - name: Upload ROM
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gbscribe-rom
+          path: |
+            dist/GBScribe.gba
+            dist/GBScribe.sha256
+          if-no-files-found: error
+          retention-days: 30
