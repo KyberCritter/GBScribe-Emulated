@@ -145,7 +145,6 @@ class GBScribeDemo {
     this.loaded = false;
     this.freshBoot = false;
     this.destroyed = false;
-    this.demoRunning = false;
     this.listeningAction = null;
     this.keyboardActive = false;
     this.held = new Map();
@@ -261,7 +260,6 @@ class GBScribeDemo {
       powerButtons: qa('[data-action="power"]'),
       tearButtons: qa('[data-action="tear"]'),
       feedButtons: qa('[data-action="feed"]'),
-      demoButtons: qa('[data-action="demo"]'),
       exportButtons: qa('[data-export]'),
       pageButtons: qa('[data-page-action]'),
       dialogRollFill: q('[data-dialog-roll-fill]'),
@@ -494,9 +492,6 @@ class GBScribeDemo {
     }
     for (const button of $$('[data-action="mute"]')) {
       button.addEventListener('click', () => this.toggleMute(), { signal });
-    }
-    for (const button of $$('[data-action="demo"]')) {
-      button.addEventListener('click', () => this.runDemo(), { signal });
     }
     for (const button of $$('[data-export]')) {
       button.addEventListener('click', () => this.exportAll(button.dataset.export), { signal });
@@ -801,13 +796,6 @@ class GBScribeDemo {
     return null;
   }
 
-  async tap(action, hold = 95) {
-    this.pressButton(action, 'demo');
-    await sleep(hold);
-    this.releaseButton(action, 'demo');
-    await sleep(80);
-  }
-
   /* -------------------------------------------------------------- rebind */
 
   startRebind(action) {
@@ -914,7 +902,7 @@ class GBScribeDemo {
   showGuidePrompt() {
     if (this.destroyed || !this.loaded || this.guideActive || this.guidePromptShown) return;
     if (!this.refs.guideIntro || this.refs.guideIntro.open) return;
-    if (this.openDialogElement || this.demoRunning) return;
+    if (this.openDialogElement) return;
     this.guidePromptShown = true;
     this.openDialogElement = this.refs.guideIntro;
     this.refs.guideIntro.showModal();
@@ -1682,9 +1670,6 @@ class GBScribeDemo {
     for (const button of this.refs.exportButtons) {
       button.disabled = nothingToExport;
     }
-    for (const button of this.refs.demoButtons) {
-      button.disabled = !this.loaded;
-    }
     this.refs.gbaPower?.classList.toggle('on', this.loaded);
     this.updatePaperDialog();
   }
@@ -1700,45 +1685,6 @@ class GBScribeDemo {
     this.refs.coverState.classList.toggle('is-open', !printer.coverClosed);
     this.refs.coverButton.textContent = printer.coverClosed ? 'Open cover' : 'Close cover';
     this.refs.removeRollButton.disabled = printer.rollRows <= 0;
-  }
-
-  /* ----------------------------------------------------------------- demo */
-
-  async runDemo() {
-    if (!this.loaded) {
-      this.toast('The emulator is still loading.');
-      return;
-    }
-    if (this.demoRunning) return;
-    this.demoRunning = true;
-    this.openDialogElement = null;
-    for (const dialog of Object.values(this.refs.dialogs)) dialog?.close();
-
-    try {
-      if (!this.printer.powered) this.printer.setPower(true);
-      if (!this.printer.coverClosed) this.printer.setCover(false);
-      if (this.printer.rollRows < 600) this.printer.replaceRoll(PAPER_FULL_ROLL_ROWS);
-      this.sound.ensure();
-      this.toast('Loading GBScribe…', false, 1200);
-      await this.resetGba(false);
-      await sleep(1400);
-      await this.tap('START');
-      await sleep(260);
-      await this.tap('DOWN');
-      await this.tap('DOWN');
-      await this.tap('DOWN');
-      await sleep(120);
-      await this.tap('A');
-      await sleep(520);
-      await this.tap('A');
-      this.toast('Test print started. Watch the paper feed out of the slot.', false, 4200);
-    } catch (error) {
-      console.error(error);
-      this.toast('The guided demo could not run. Use the GBA buttons manually.', true);
-    } finally {
-      this.demoRunning = false;
-      this.scheduleUI();
-    }
   }
 
   async resetGba(showToast = true) {
