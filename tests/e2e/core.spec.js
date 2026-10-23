@@ -25,6 +25,31 @@ test('printer starts on and the power switch disconnects it', async ({ page }) =
   await waitForText(page, 'Printer: OK');
 });
 
+test('the POWER layer is the whole cap, not just the circular bump', async ({ page }) => {
+  await boot(page);
+  const geometry = await page.evaluate(() => {
+    const root = document.querySelector('gbscribe-emulator').shadowRoot;
+    const scene = root.querySelector('.gbs-printer-scene').getBoundingClientRect();
+    const on = root.querySelector('.gbs-printer-switch-on');
+    const off = root.querySelector('.gbs-printer-switch-off');
+    const onBox = on.getBoundingClientRect();
+    const offBox = off.getBoundingClientRect();
+    return {
+      width: onBox.width / scene.width,
+      height: onBox.height / scene.height,
+      sourceAspect: on.naturalHeight / on.naturalWidth,
+      sameWidth: Math.abs(onBox.width - offBox.width) < 0.5,
+      sameLeft: Math.abs(onBox.left - offBox.left) < 0.5,
+    };
+  });
+  expect(geometry.width).toBeGreaterThan(0.16);
+  expect(geometry.height).toBeGreaterThan(0.12);
+  // A disc would be square; the cap is noticeably taller than it is wide.
+  expect(geometry.sourceAspect).toBeGreaterThan(1.2);
+  expect(geometry.sameWidth).toBe(true);
+  expect(geometry.sameLeft).toBe(true);
+});
+
 test.describe('GBScribe emulator shell and Game Boy Printer', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page);
@@ -135,7 +160,7 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
       };
     });
     expect(feedGeometry.centerX).toBeCloseTo(0.241, 3);
-    expect(feedGeometry.centerY).toBeCloseTo(0.848, 3);
+    expect(feedGeometry.centerY).toBeCloseTo(0.851, 3);
     expect(feedGeometry.aspect).toBeGreaterThan(0.9);
     expect(feedGeometry.aspect).toBeLessThan(1.1);
     expect(feedGeometry.userSelect).toBe('none');

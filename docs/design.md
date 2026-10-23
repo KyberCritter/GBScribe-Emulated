@@ -7,8 +7,8 @@ cut out from their backgrounds and used directly:
   is replaced by the live 240×160 canvas.
 - `assets/img/printer.png` / `printer.webp` — power-on Game Boy Printer with
   the printed paper leader cloned out, the live paper overlaid at the dark slot,
-  and the power rocker removed from its panel. The rocker is a separate layer:
-  `printer-switch-on.*` and `printer-switch-off.*`.
+  and the POWER switch cap removed from its panel. The whole cap is a separate
+  layer: `printer-switch-on.*` and `printer-switch-off.*`.
 
 The original uploads are kept in `.scratchwork/reference/` (uncommitted) for
 comparison.
@@ -36,13 +36,14 @@ comparison.
   and status/battery LEDs.
 - **Dark paper slot** at the top of the black band is the paper exit.
 - Beige front with an embossed Nintendo oval, red circular FEED button at the
-  lower left, and gray POWER rocker with ON/OFF at the lower right. The FEED
+  lower left, and gray POWER switch with ON/OFF at the lower right. The FEED
   hit zone is centered on the photographed button at 24.1% / 84.8% of the
   printer image.
-- The POWER rocker is a pair of 108×108 cutouts over one body image: the ON
-  rocker comes from the power-on photo, the OFF rocker from the power-off photo.
-  Toggling power crossfades the two layers with a short horizontal nudge; the
-  body, labels, and panel never move.
+- The POWER switch is the whole rounded cap around the circular bump, so the
+  POWER label rocks with it. It is a pair of 120×177 cutouts over one body
+  image: the ON cap comes from the power-on photo, the OFF cap from the
+  power-off photo. Toggling power crossfades the two layers with a short
+  vertical nudge; the body, ON/OFF labels, and recess never move.
 - The BATT pilot is a red LED, matching the hardware, not a green status light.
 - Link Cable port on the **right side**.
 

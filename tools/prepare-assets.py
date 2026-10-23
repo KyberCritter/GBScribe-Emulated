@@ -24,12 +24,13 @@ from rembg import remove
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "img"
 
-# Rocker positions in the 700x1356 printer cutout, measured from the on and
-# off photos. The cleaned base keeps the panel; only these discs are layered.
-SWITCH_ON = (504, 1172)
-SWITCH_OFF = (492, 1178)
-SWITCH_RADIUS = 54
-SWITCH_MASK_RADIUS = 50
+# The POWER control is the whole rounded cap around its circular bump: the cap
+# carries the POWER label and rocks as one piece. Boxes are measured in the
+# 700x1356 printer cutout, from the power-on and power-off photos.
+SWITCH_ON_BOX = (448, 1071, 568, 1248)
+SWITCH_OFF_BOX = (429, 1071, 548, 1249)
+SWITCH_RADIUS = 7
+SWITCH_FEATHER = 2
 
 
 def cutout(source: Path, width: int, rotate: int = 0) -> Image.Image:
@@ -63,22 +64,24 @@ def empty_printer_slot(image: Image.Image) -> None:
 
 
 def remove_switch(image: Image.Image) -> Image.Image:
-    """Fill the rocker's socket with the surrounding panel before layering."""
+    """Paint the cap's socket out of the shell so the cap can move on top."""
     rgba = np.asarray(image.convert("RGBA")).astype(float)
     source = rgba[:, :, :3]
     original_alpha = rgba[:, :, 3].copy()
+    x0, y0, x1, y1 = SWITCH_ON_BOX
     mask = Image.new("L", image.size, 0)
     draw = ImageDraw.Draw(mask)
-    cx, cy = SWITCH_ON
-    r = SWITCH_MASK_RADIUS
-    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=255)
+    draw.rounded_rectangle(
+        (x0, y0, x1 - 1, y1 - 1), radius=SWITCH_RADIUS, fill=255
+    )
     hole = np.asarray(mask) > 0
 
+    pad = 16
     ring_mask = Image.new("L", image.size, 0)
     ring_draw = ImageDraw.Draw(ring_mask)
-    ring_draw.ellipse((cx - r - 14, cy - r - 14, cx + r + 14, cy + r + 14), fill=255)
-    ring_draw.ellipse((cx - r - 2, cy - r - 2, cx + r + 2, cy + r + 2), fill=0)
-    ring = np.asarray(ring_mask) > 0
+    ring_draw.rectangle((x0 - pad, y0 - pad, x1 + pad, y1 + pad), fill=255)
+    ring_draw.rectangle((x0 - 3, y0 - 3, x1 + 3, y1 + 3), fill=0)
+    ring = (np.asarray(ring_mask) > 0) & (original_alpha > 240)
 
     ys, xs = np.nonzero(ring)
     design = np.vstack([np.ones_like(xs), xs, ys, xs * ys, xs * xs, ys * ys]).T.astype(float)
@@ -90,23 +93,31 @@ def remove_switch(image: Image.Image) -> Image.Image:
         coefficients, *_ = np.linalg.lstsq(design, source[ys, xs, channel], rcond=None)
         filled[my, mx, channel] = fill_design @ coefficients
 
-    alpha = Image.fromarray(hole.astype(np.uint8) * 255).filter(ImageFilter.GaussianBlur(5))
+    alpha = Image.fromarray(hole.astype(np.uint8) * 255).filter(
+        ImageFilter.GaussianBlur(SWITCH_FEATHER + 1)
+    )
     feather = np.asarray(alpha).astype(float)[:, :, None] / 255.0
     blended = source * (1 - feather) + filled * feather
     result = np.dstack([np.clip(blended, 0, 255), original_alpha]).astype(np.uint8)
     return Image.fromarray(result, "RGBA")
 
 
-def rocker_cutout(image: Image.Image, center: tuple[int, int], radius: int = SWITCH_RADIUS) -> Image.Image:
-    """Cut a soft-edged disc around the rocker and its shadow."""
-    cx, cy = center
-    crop = image.crop((cx - radius, cy - radius, cx + radius, cy + radius))
-    size = crop.size
-    inset = 6
-    mask = Image.new("L", size, 0)
+def switch_cutout(
+    image: Image.Image,
+    box: tuple[int, int, int, int],
+    size: tuple[int, int] | None = None,
+) -> Image.Image:
+    """Cut the whole switch cap with a soft rounded-rectangle edge."""
+    crop = image.crop(box).convert("RGBA")
+    if size:
+        crop = crop.resize(size, Image.LANCZOS)
+    width, height = crop.size
+    mask = Image.new("L", crop.size, 0)
     draw = ImageDraw.Draw(mask)
-    draw.ellipse((inset, inset, size[0] - inset - 1, size[1] - inset - 1), fill=255)
-    mask = mask.filter(ImageFilter.GaussianBlur(inset))
+    draw.rounded_rectangle(
+        (0, 0, width - 1, height - 1), radius=SWITCH_RADIUS, fill=255
+    )
+    mask = mask.filter(ImageFilter.GaussianBlur(SWITCH_FEATHER))
     crop.putalpha(mask)
     return crop
 
@@ -115,23 +126,25 @@ def match_panel(
     crop: Image.Image,
     source_image: Image.Image,
     base_image: Image.Image,
-    center: tuple[int, int],
 ) -> Image.Image:
-    """Color-match the off rocker to the cleaned base's panel."""
-    cx, cy = center
-    r = SWITCH_RADIUS
-    ring_mask = Image.new("L", source_image.size, 0)
-    draw = ImageDraw.Draw(ring_mask)
-    draw.ellipse((cx - r + 2, cy - r + 2, cx + r - 2, cy + r - 2), fill=255)
-    draw.ellipse((cx - r + 10, cy - r + 10, cx + r - 10, cy + r - 10), fill=0)
-    ring = np.asarray(ring_mask) > 0
-
+    """Color-match the off cap to the cleaned base's panel."""
+    sx0, sy0, sx1, sy1 = SWITCH_OFF_BOX
+    bx0, by0, bx1, by1 = SWITCH_ON_BOX
+    pad = 12
     source = np.asarray(source_image.convert("RGB")).astype(float)
     target = np.asarray(base_image.convert("RGB")).astype(float)
     out = np.asarray(crop.convert("RGB")).astype(float)
+
+    source_ring = np.zeros(source.shape[:2], bool)
+    source_ring[sy0 - pad:sy1 + pad, sx0 - pad:sx1 + pad] = True
+    source_ring[sy0 - 2:sy1 + 2, sx0 - 2:sx1 + 2] = False
+    base_ring = np.zeros(target.shape[:2], bool)
+    base_ring[by0 - pad:by1 + pad, bx0 - pad:bx1 + pad] = True
+    base_ring[by0 - 2:by1 + 2, bx0 - 2:bx1 + 2] = False
+
     for channel in range(3):
-        src_mean = source[ring, channel].mean()
-        dst_mean = target[ring, channel].mean()
+        src_mean = source[source_ring, channel].mean()
+        dst_mean = target[base_ring, channel].mean()
         gain = dst_mean / src_mean if src_mean > 1 else 1.0
         out[:, :, channel] = np.clip(out[:, :, channel] * gain, 0, 255)
 
@@ -158,11 +171,11 @@ def main() -> None:
     save(gba, "gba")
 
     # The first printer photo is landscape and shows the switch in the ON
-    # position. Keep its rocker as a layer, then paint the socket out of the
-    # base so only the switch has to change between states.
+    # position. Keep its whole POWER cap as a layer, then paint the cap's
+    # socket out of the base so only the switch has to move between states.
     printer = cutout(args.printer, 700, rotate=-90)
     empty_printer_slot(printer)
-    switch_on = rocker_cutout(printer, SWITCH_ON)
+    switch_on = switch_cutout(printer, SWITCH_ON_BOX)
     printer_base = remove_switch(printer)
     save(printer_base, "printer")
     save(switch_on, "printer-switch-on")
@@ -170,8 +183,8 @@ def main() -> None:
     printer_off = cutout(args.printer_off, 700)
     printer_off = printer_off.resize(printer.size, Image.LANCZOS)
     empty_printer_slot(printer_off)
-    switch_off = rocker_cutout(printer_off, SWITCH_OFF)
-    switch_off = match_panel(switch_off, printer_off, printer_base, SWITCH_OFF)
+    switch_off = switch_cutout(printer_off, SWITCH_OFF_BOX, switch_on.size)
+    switch_off = match_panel(switch_off, printer_off, printer_base)
     save(switch_off, "printer-switch-off")
 
 

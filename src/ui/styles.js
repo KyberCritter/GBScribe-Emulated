@@ -416,16 +416,17 @@ export function buildStyles() {
   border-radius: 14% 14% 8% 8% / 20% 20% 6% 6%;
 }
 .gbs-hit-feed {
-  left: 11.4%;
-  top: 77.8%;
-  width: 25.4%;
-  height: 14%;
+  left: 13.14%;
+  top: 79.5%;
+  width: 21.86%;
+  height: auto;
+  aspect-ratio: 1;
   border-radius: 50%;
 }
 .gbs-hit-power {
   left: 60.7%;
   top: 78.7%;
-  width: 21.5%;
+  width: 20.4%;
   height: 13.1%;
   border-radius: 7px;
 }
@@ -438,10 +439,11 @@ export function buildStyles() {
 }
 .gbs-printer-led {
   position: absolute;
-  left: 88.9%;
-  top: 50.2%;
-  width: 7px;
-  height: 7px;
+  left: 89.9%;
+  top: 50.1%;
+  width: 4.6%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #4f4a42;
   box-shadow: 0 0 0 1px #00000055, 0 0 0 2px #ffffff33 inset;
@@ -466,21 +468,22 @@ export function buildStyles() {
 
 .gbs-printer-switch {
   position: absolute;
-  width: 15.429%;
-  height: 7.965%;
+  width: 17.143%;
+  height: 13.053%;
   z-index: 17;
   pointer-events: none;
   opacity: 0;
-  transform: translateX(0);
+  transform: translateY(0);
   transition: opacity .12s ease, transform .14s ease;
 }
-.gbs-printer-switch-on { left: 64.286%; top: 82.448%; transform: translateX(-2px); }
-.gbs-printer-switch-off { left: 62.571%; top: 82.891%; transform: translateX(2px); }
+.gbs-printer-switch-on { left: 64%; top: 78.982%; transform: translateY(-4px); }
+.gbs-printer-switch-off { left: 64%; top: 78.982%; transform: translateY(4px); }
 .gbs-printer-scene.is-powered .gbs-printer-switch-on,
 .gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off {
   opacity: 1;
-  transform: translateX(0);
 }
+.gbs-printer-scene.is-powered .gbs-printer-switch-on { transform: translateY(-2px); }
+.gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off { transform: translateY(2px); }
 
 .gbs-paper-stage {
   position: absolute;

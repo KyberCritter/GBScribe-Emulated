@@ -57,21 +57,24 @@ and the live paper starts at the slot line.
 The old pale lip and lower-lip drawing is no longer needed: this photo already
 has the dark opening and the ribbed bar.
 
-## 4. Layer the power rocker
+## 4. Layer the power switch
 
-Only the power rocker changes between ON and OFF; the printer body must not
-swap. The script therefore:
+Only the power switch changes between ON and OFF; the printer body must not
+swap. The switch is the **whole rounded rectangular cap** around the circular
+bump, including the POWER label, not just the bump. The script therefore:
 
-1. Cuts a soft-edged disc around the ON rocker at (504, 1172), radius 54.
-2. Paints the rocker socket out of the base shell with a quadratic panel fit,
-   so the body has no rocker baked in.
-3. Cuts the OFF rocker from the power-off photo at (492, 1178), radius 54, and
-   color-matches its surrounding panel to the cleaned base.
+1. Cuts a soft-edged rounded rectangle around the ON cap at
+   (448, 1071)–(568, 1248).
+2. Paints the cap's socket out of the base shell with a quadratic panel fit,
+   so the body has no cap baked in.
+3. Cuts the OFF cap from the power-off photo at (429, 1071)–(548, 1249),
+   scales it to the ON cap's 120×177 size, and color-matches its surrounding
+   panel to the cleaned base.
 
-`src/ui/template.js` stacks the two 108×108 rocker cutouts over the single
-base shell. `.gbs-printer-scene.is-powered` fades the ON rocker in and the OFF
-rocker out over 120 ms, with a 2 px horizontal nudge, so the switch flicks
-without the body moving or a rectangular patch appearing.
+`src/ui/template.js` stacks the two 120×177 cap cutouts over the single
+base shell. `.gbs-printer-scene.is-powered` fades the ON cap in and the OFF cap
+out over 120 ms, with a short vertical nudge, so the whole switch rocks and the
+rectangle visibly moves while the body and ON/OFF labels stay put.
 
 ## 5. Composite the GBA screen
 
@@ -118,8 +121,8 @@ The printer uses the same technique on its 700×1356 cutout:
 | Roll cover | left 11%, top 1.3%, width 78%, height 33.5% |
 | FEED | centre 24.1%, 84.8%; hit zone 25.4% × 14% |
 | POWER panel | left 60.7%, top 78.7%, width 21.5%, height 13.1% |
-| Rocker ON | left 64.286%, top 82.448%, 108×108 px layer |
-| Rocker OFF | left 62.571%, top 82.891%, 108×108 px layer |
+| Switch cap ON | left 64%, top 78.982%, 120×177 px layer |
+| Switch cap OFF | left 64%, top 78.982%, 120×177 px layer |
 | Status LED | centre 88.9%, 50.2% (red) |
 | Link port | right edge, 61% down |
 | Paper stage | left 19%, top 1.5%, width 62%, height 42.5% |
