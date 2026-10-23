@@ -18,7 +18,6 @@ export function buildTemplate() {
 <div class="gbs-root" data-root>
   <header class="gbs-header">
     <div class="gbs-title">
-      <span class="gbs-kicker">Interactive hardware demo</span>
       <h2>GBScribe <span class="gbs-x">×</span> Game Boy Printer</h2>
       <p>Try GBScribe in your browser! Write or draw, then print to an emulated Game Boy Printer. You can even download your "prints" or print them to a real printer.</p>
     </div>
