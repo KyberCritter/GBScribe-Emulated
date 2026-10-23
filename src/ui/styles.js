@@ -180,9 +180,9 @@ export function buildStyles() {
 }
 .gbs-gba-power-led {
   position: absolute;
-  left: 84.08%;
-  top: 18.36%;
-  width: 1.35%;
+  left: 81.83%;
+  top: 16.79%;
+  width: 2.7%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle at 34% 28%, #7b3834 0 8%, #4a1717 42%, #1a0303 100%);
@@ -223,10 +223,10 @@ export function buildStyles() {
 }
 .gbs-screen-mount {
   position: absolute;
-  left: 25.7%;
-  top: 17.5%;
-  width: 46.4%;
-  height: 54%;
+  left: 27.25%;
+  top: 18.52%;
+  width: 44.67%;
+  height: 51.95%;
   background: #050508;
   overflow: hidden;
   border-radius: 2.2% / 4.2%;
@@ -298,19 +298,33 @@ export function buildStyles() {
 .gbs-hit:active, .gbs-hit.is-pressed { background: #ffffff3d; box-shadow: 0 0 0 3px #fff; }
 .gbs-hit:focus-visible { outline: 3px solid #ffffffd9; outline-offset: 2px; }
 
-.gbs-hit-a { left: 89.5%; top: 33.8%; width: 8%; height: 13%; }
-.gbs-hit-b { left: 79.8%; top: 39.4%; width: 8%; height: 13%; }
-.gbs-hit-start { left: 16%; top: 62.5%; width: 5.4%; height: auto; aspect-ratio: 1; }
-.gbs-hit-select { left: 16.1%; top: 72.2%; width: 5.4%; height: auto; aspect-ratio: 1; }
-.gbs-hit-l { left: 8%; top: 1%; width: 22%; height: 5.5%; border-radius: 0 0 18px 18px; }
-.gbs-hit-r { right: 7%; top: 1%; width: 22%; height: 5.5%; border-radius: 0 0 18px 18px; }
+.gbs-hit-a { left: 87%; top: 32.3%; width: 8%; height: 13.8%; }
+.gbs-hit-b { left: 77.9%; top: 37.7%; width: 8%; height: 13.4%; }
+.gbs-hit-start { left: 16.72%; top: 60.56%; width: 5.4%; height: auto; aspect-ratio: 1; }
+.gbs-hit-select { left: 16.55%; top: 70.48%; width: 5.4%; height: auto; aspect-ratio: 1; }
+.gbs-hit-l {
+  left: 0;
+  top: 0;
+  width: 22.1%;
+  height: 13.6%;
+  border-radius: 50%;
+  transform: rotate(-20deg);
+}
+.gbs-hit-r {
+  right: 0;
+  top: 0;
+  width: 22.1%;
+  height: 13.6%;
+  border-radius: 50%;
+  transform: rotate(20deg);
+}
 
 .gbs-dpad-photo {
   position: absolute;
-  left: 4.7%;
-  top: 31.6%;
-  width: 13.3%;
-  height: 22.2%;
+  left: 6.75%;
+  top: 30.25%;
+  width: 12.42%;
+  height: 21.42%;
   z-index: 14;
 }
 .gbs-dpad-photo button {
@@ -395,24 +409,25 @@ export function buildStyles() {
 }
 
 .gbs-hit-cover {
-  left: 14%;
-  top: 1%;
-  width: 72%;
-  height: 33%;
+  left: 11%;
+  top: 1.3%;
+  width: 78%;
+  height: 33.5%;
   border-radius: 14% 14% 8% 8% / 20% 20% 6% 6%;
 }
 .gbs-hit-feed {
-  left: 13.75%;
-  top: 81.4%;
-  width: 21.5%;
-  height: 11%;
+  left: 13.14%;
+  top: 79.5%;
+  width: 21.86%;
+  height: auto;
+  aspect-ratio: 1;
   border-radius: 50%;
 }
 .gbs-hit-power {
-  left: 54.3%;
-  top: 78%;
-  width: 27.2%;
-  height: 14.7%;
+  left: 60.7%;
+  top: 78.96%;
+  width: 20.4%;
+  height: 13.1%;
   border-radius: 7px;
 }
 .gbs-port-printer {
@@ -424,29 +439,58 @@ export function buildStyles() {
 }
 .gbs-printer-led {
   position: absolute;
-  left: 89.7%;
-  top: 54.5%;
-  width: 7px;
-  height: 7px;
+  left: 89.9%;
+  top: 50.1%;
+  width: 4.6%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #4f4a42;
   box-shadow: 0 0 0 1px #00000055, 0 0 0 2px #ffffff33 inset;
   z-index: 20;
   pointer-events: none;
 }
-.gbs-printer-led.on { background: #48b961; box-shadow: 0 0 8px #48b961cc, 0 0 0 1px #2b7a3c; }
-.gbs-printer-led.busy { background: var(--gbs-amber); box-shadow: 0 0 9px #e8a51bdd, 0 0 0 1px #8c5e0e; animation: gbs-pulse .7s ease-in-out infinite alternate; }
-.gbs-printer-led.error { background: var(--gbs-red); box-shadow: 0 0 9px #bf3b30dd, 0 0 0 1px #6d1812; }
-.gbs-printer-link-led { left: auto; right: 1.4%; top: 59.4%; width: 5px; height: 5px; }
-.gbs-printer-link-led.on { background: #5aa5e8; box-shadow: 0 0 8px #5aa5e8cc; }
+.gbs-printer-led.on {
+  background: radial-gradient(circle at 36% 30%, #ffb2a8 0 8%, #ef4433 42%, #a51207 100%);
+  box-shadow: 0 0 8px #ef4433cc, 0 0 0 1px #6c0e05;
+}
+.gbs-printer-led.busy {
+  background: radial-gradient(circle at 36% 30%, #ffc1b8 0 8%, #e53222 45%, #8f0e05 100%);
+  box-shadow: 0 0 9px #e53222dd, 0 0 0 1px #6a0c04;
+  animation: gbs-pulse .7s ease-in-out infinite alternate;
+}
+.gbs-printer-led.error {
+  background: #a80c04;
+  box-shadow: 0 0 9px #bf3b30dd, 0 0 0 1px #5c0802;
+  animation: gbs-pulse .35s ease-in-out infinite alternate;
+}
 @keyframes gbs-pulse { to { opacity: .45; } }
+
+.gbs-printer-switch {
+  position: absolute;
+  width: 17.143%;
+  height: 13.053%;
+  z-index: 17;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(0);
+  transition: opacity .12s ease, transform .14s ease;
+}
+.gbs-printer-switch-on { left: 64%; top: 78.982%; transform: translateX(4px); }
+.gbs-printer-switch-off { left: 61.286%; top: 78.982%; transform: translateX(-4px); }
+.gbs-printer-scene.is-powered .gbs-printer-switch-on,
+.gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off {
+  opacity: 1;
+}
+.gbs-printer-scene.is-powered .gbs-printer-switch-on { transform: translateX(0); }
+.gbs-printer-scene:not(.is-powered) .gbs-printer-switch-off { transform: translateX(0); }
 
 .gbs-paper-stage {
   position: absolute;
   left: 50%;
-  top: 0.5%;
+  top: 1.5%;
   width: 62%;
-  height: 39.4%;
+  height: 42.5%;
   transform: translateX(-50%);
   z-index: 18;
   overflow: hidden;
@@ -583,25 +627,6 @@ export function buildStyles() {
 .gbs-scissors svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .gbs-scissors:hover { background: #fff; color: var(--gbs-crimson); }
 .gbs-scissors[disabled] { opacity: .35; pointer-events: none; }
-
-.gbs-statusbar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: 8px;
-  margin-top: 18px;
-  padding: 7px 10px;
-  border: 1px solid var(--gbs-line);
-  border-radius: 8px;
-  background: #fffdf7b8;
-  font-size: 11px;
-  color: var(--gbs-ink-soft);
-}
-.gbs-status-led { width: 7px; height: 7px; border-radius: 50%; background: var(--gbs-green); box-shadow: 0 0 6px #3f9b5780; flex: 0 0 auto; }
-.gbs-status-led.busy { background: var(--gbs-amber); box-shadow: 0 0 7px #e8a51bcc; }
-.gbs-status-led.error { background: var(--gbs-red); box-shadow: 0 0 7px #bf3b30cc; }
-.gbs-status-led.off { background: #9b9488; box-shadow: none; }
 
 /* ---------------------------------------------------------------- toolbar */
 .gbs-toolbar {

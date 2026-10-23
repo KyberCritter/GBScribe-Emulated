@@ -14,6 +14,10 @@ class GBScribeEmulator extends HTMLElement {
       fontUrl: this.getAttribute('font-url') || asset('assets/fonts/PressStart2P-Regular.woff2'),
       gbaImageUrl: this.getAttribute('gba-image') || asset('assets/img/gba.webp'),
       printerImageUrl: this.getAttribute('printer-image') || asset('assets/img/printer.webp'),
+      printerSwitchOnUrl:
+        this.getAttribute('printer-switch-on') || asset('assets/img/printer-switch-on.webp'),
+      printerSwitchOffUrl:
+        this.getAttribute('printer-switch-off') || asset('assets/img/printer-switch-off.webp'),
       guidePrompt: !isOff(this.getAttribute('guide-prompt')),
     });
     this.setAttribute('data-ready', '');
@@ -35,7 +39,7 @@ if (!customElements.get('gbscribe-emulator')) {
 const placeholder = document.getElementById('gbscribe-demo');
 if (placeholder && placeholder.tagName !== 'GBSCRIBE-EMULATOR') {
   const element = document.createElement('gbscribe-emulator');
-  for (const attribute of ['rom-url', 'bios-url', 'vendor-base', 'font-url', 'gba-image', 'printer-image', 'guide-prompt']) {
+  for (const attribute of ['rom-url', 'bios-url', 'vendor-base', 'font-url', 'gba-image', 'printer-image', 'printer-switch-on', 'printer-switch-off', 'guide-prompt']) {
     if (placeholder.hasAttribute(attribute)) element.setAttribute(attribute, placeholder.getAttribute(attribute));
   }
   placeholder.replaceWith(element);

@@ -13,16 +13,51 @@ import {
 
 test('printer starts on and the power switch disconnects it', async ({ page }) => {
   await boot(page);
-  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
+  const power = page.locator('gbscribe-emulator .gbs-hit-power');
+  await expect(power).toHaveAttribute('aria-pressed', 'true');
   await waitForText(page, 'Printer: OK');
 
-  await page.locator('gbscribe-emulator .gbs-hit-power').click();
-  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
+  await power.click();
+  await expect(power).toHaveAttribute('aria-pressed', 'false');
   await waitForText(page, 'Printer: disconnected');
 
-  await page.locator('gbscribe-emulator .gbs-hit-power').click();
-  await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
+  await power.click();
+  await expect(power).toHaveAttribute('aria-pressed', 'true');
   await waitForText(page, 'Printer: OK');
+});
+
+test('the POWER layer is the whole cap, not just the circular bump', async ({ page }) => {
+  await boot(page);
+  const geometry = await page.evaluate(() => {
+    const root = document.querySelector('gbscribe-emulator').shadowRoot;
+    const scene = root.querySelector('.gbs-printer-scene').getBoundingClientRect();
+    const on = root.querySelector('.gbs-printer-switch-on');
+    const off = root.querySelector('.gbs-printer-switch-off');
+    const onBox = on.getBoundingClientRect();
+    const offBox = off.getBoundingClientRect();
+    return {
+      width: onBox.width / scene.width,
+      height: onBox.height / scene.height,
+      sourceAspect: on.naturalHeight / on.naturalWidth,
+      sameWidth: Math.abs(onBox.width - offBox.width) < 0.5,
+      travelLeft:
+        (parseFloat(getComputedStyle(on).left) - parseFloat(getComputedStyle(off).left)) /
+        scene.width,
+      sameTop:
+        Math.abs(
+          parseFloat(getComputedStyle(on).top) - parseFloat(getComputedStyle(off).top),
+        ) < 0.5,
+    };
+  });
+  expect(geometry.width).toBeGreaterThan(0.16);
+  expect(geometry.height).toBeGreaterThan(0.12);
+  // A disc would be square; the cap is noticeably taller than it is wide.
+  expect(geometry.sourceAspect).toBeGreaterThan(1.2);
+  expect(geometry.sameWidth).toBe(true);
+  // OFF is to the left of ON, and the switch does not drop downward.
+  expect(geometry.travelLeft).toBeGreaterThan(0.02);
+  expect(geometry.travelLeft).toBeLessThan(0.05);
+  expect(geometry.sameTop).toBe(true);
 });
 
 test.describe('GBScribe emulator shell and Game Boy Printer', () => {
@@ -72,13 +107,65 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
       };
     });
 
-    expect(led.centerX).toBeCloseTo(0.8408, 3);
-    expect(led.centerY).toBeCloseTo(0.1836, 3);
-    expect(led.widthRatio).toBeCloseTo(0.0135, 3);
+    expect(led.centerX).toBeCloseTo(0.8183, 3);
+    expect(led.centerY).toBeCloseTo(0.1679, 3);
+    expect(led.widthRatio).toBeCloseTo(0.027, 3);
     expect(led.height).toBeCloseTo(led.width, 1);
     expect(led.radius).toBe('50%');
     expect(led.background).toContain('radial-gradient');
     expect(led.on).toBe(true);
+  });
+
+  test('L/R trigger zones cover the whole shoulders', async ({ page }) => {
+    const geometry = await page.evaluate(() => {
+      const root = document.querySelector('gbscribe-emulator').shadowRoot;
+      const photo = root.querySelector('.gbs-gba-photo').getBoundingClientRect();
+      const left = root.querySelector('.gbs-hit-l');
+      const right = root.querySelector('.gbs-hit-r');
+      return {
+        leftWidth: left.offsetWidth / photo.width,
+        leftHeight: left.offsetHeight / photo.height,
+        rightWidth: right.offsetWidth / photo.width,
+        rightHeight: right.offsetHeight / photo.height,
+        leftPoint: {
+          x: photo.left + photo.width * 0.06,
+          y: photo.top + photo.height * 0.08,
+        },
+        rightPoint: {
+          x: photo.left + photo.width * 0.94,
+          y: photo.top + photo.height * 0.08,
+        },
+      };
+    });
+
+    expect(geometry.leftWidth).toBeGreaterThan(0.2);
+    expect(geometry.leftHeight).toBeGreaterThan(0.12);
+    expect(geometry.rightWidth).toBeGreaterThan(0.2);
+    expect(geometry.rightHeight).toBeGreaterThan(0.12);
+
+    // Press the outer, lower part of each photographed trigger, not just the
+    // old narrow strip along the top edge.
+    for (const [point, bit] of [
+      [geometry.leftPoint, 9],
+      [geometry.rightPoint, 8],
+    ]) {
+      await page.mouse.move(point.x, point.y);
+      await page.mouse.down();
+      expect(
+        await page.evaluate(
+          (bit) => (window.__gbsDemo.gba.keypad.currentDown & (1 << bit)) === 0,
+          bit,
+        ),
+      ).toBe(true);
+      await page.mouse.up();
+      await page.waitForTimeout(80);
+      expect(
+        await page.evaluate(
+          (bit) => (window.__gbsDemo.gba.keypad.currentDown & (1 << bit)) !== 0,
+          bit,
+        ),
+      ).toBe(true);
+    }
   });
 
   test('Try a test print runs GBScribe, prints paper, tears and exports a PNG', async ({ page }) => {
@@ -134,8 +221,8 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
         userSelect: getComputedStyle(root.querySelector('.gbs-root')).userSelect,
       };
     });
-    expect(feedGeometry.centerX).toBeCloseTo(0.245, 3);
-    expect(feedGeometry.centerY).toBeCloseTo(0.869, 3);
+    expect(feedGeometry.centerX).toBeCloseTo(0.241, 3);
+    expect(feedGeometry.centerY).toBeCloseTo(0.851, 3);
     expect(feedGeometry.aspect).toBeGreaterThan(0.9);
     expect(feedGeometry.aspect).toBeLessThan(1.1);
     expect(feedGeometry.userSelect).toBe('none');
@@ -177,18 +264,43 @@ test.describe('GBScribe emulator shell and Game Boy Printer', () => {
       })))
       .toEqual({ roll: 0, cover: false, feedDisabled: true });
     await page.locator('gbscribe-emulator [data-paper-replace]').click();
-    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer on');
-    expect(await page.evaluate(() => window.__gbsDemo.printer.rollRows)).toBe(4000);
+    await expect
+      .poll(() => page.evaluate(() => window.__gbsDemo.printer.rollRows))
+      .toBe(4000);
     await page.locator('gbscribe-emulator [data-dialog="paper"] [data-close]').first().click();
 
     // Power off -> the ROM's real INQUIRY path reports disconnected.
     await page.locator('gbscribe-emulator [data-action="power"]').first().click();
-    await expect(page.locator('gbscribe-emulator [data-status]')).toHaveText('Printer off');
+    await expect(
+      page.locator('gbscribe-emulator .gbs-hit-power'),
+    ).toHaveAttribute('aria-pressed', 'false');
+    await page.waitForTimeout(250);
+    expect(
+      await page.evaluate(() => {
+        const root = document.querySelector('gbscribe-emulator').shadowRoot;
+        return {
+          powered: root.querySelector('.gbs-printer-scene').classList.contains('is-powered'),
+          on: getComputedStyle(root.querySelector('.gbs-printer-switch-on')).opacity,
+          off: getComputedStyle(root.querySelector('.gbs-printer-switch-off')).opacity,
+        };
+      }),
+    ).toEqual({ powered: false, on: '0', off: '1' });
     await resetGba(page);
     await waitForText(page, 'Printer: disconnected', 8000);
 
     await page.locator('gbscribe-emulator [data-action="power"]').first().click();
     await waitForText(page, 'Printer: OK', 8000);
+    await page.waitForTimeout(250);
+    expect(
+      await page.evaluate(() => {
+        const root = document.querySelector('gbscribe-emulator').shadowRoot;
+        return {
+          powered: root.querySelector('.gbs-printer-scene').classList.contains('is-powered'),
+          on: getComputedStyle(root.querySelector('.gbs-printer-switch-on')).opacity,
+          off: getComputedStyle(root.querySelector('.gbs-printer-switch-off')).opacity,
+        };
+      }),
+    ).toEqual({ powered: true, on: '1', off: '0' });
   });
 
   test('printer image stays still while idle and feeding', async ({ page }) => {

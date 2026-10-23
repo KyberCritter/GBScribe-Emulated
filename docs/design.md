@@ -5,8 +5,10 @@ cut out from their backgrounds and used directly:
 
 - `assets/img/gba.png` / `gba.webp` — front-on crimson GBA; the original screen
   is replaced by the live 240×160 canvas.
-- `assets/img/printer.png` / `printer.webp` — front-on Game Boy Printer; the
-  short paper leader is removed and the live paper overlays the white slot.
+- `assets/img/printer.png` / `printer.webp` — power-on Game Boy Printer with
+  the printed paper leader cloned out, the live paper overlaid at the dark slot,
+  and the POWER switch cap removed from its panel. The whole cap is a separate
+  layer: `printer-switch-on.*` and `printer-switch-off.*`.
 
 The original uploads are kept in `.scratchwork/reference/` (uncommitted) for
 comparison.
@@ -17,11 +19,12 @@ comparison.
 - White D-pad on the left, white A/B on the right.
 - Two small white Start/Select buttons under the D-pad, with tiny labels for
   accessibility.
-- Red POWER LED centered in the photographed socket at 84.08% / 18.36% of the
-  shell image. It is a 1.35%-wide circle with a radial specular highlight, so it
+- Red POWER LED centered in the photographed socket at 81.83% / 16.79% of the
+  shell image. It is a 2.7%-wide circle with a radial specular highlight, so it
   reads as a glossy LED at every responsive size.
 - Speaker grille at the bottom right.
-- Link Cable port on the **top edge**, right of centre.
+- Link Cable port on the **top edge**, left of centre; this photo crops the
+  physical port, so the page draws a small connector there.
 - The real 240×160 emulator canvas is inset in a dark screen frame inside the
   white bezel.
 
@@ -31,11 +34,19 @@ comparison.
 - Smoked translucent paper-roll cover at the top; roll and core visible.
 - Black brand band below the cover with the white “GAME BOY printer” wordmark
   and status/battery LEDs.
-- **White paper slot** at the top of the black band is the paper exit.
+- **Dark paper slot** at the top of the black band is the paper exit.
 - Beige front with an embossed Nintendo oval, red circular FEED button at the
-  lower left, and gray POWER slider with ON/OFF at the lower right. The FEED
-  hit zone is centered on the photographed button at 24.5% / 86.9% of the
+  lower left, and gray POWER switch with ON/OFF at the lower right. The FEED
+  hit zone is centered on the photographed button at 24.1% / 84.8% of the
   printer image.
+- The POWER switch is the whole rounded cap around the circular bump, so the
+  POWER label moves with it. It is a pair of 120×177 cutouts over one body
+  image: the ON cap comes from the power-on photo, the OFF cap from the
+  power-off photo. The cap sits on the right for ON and slides left for OFF,
+  uncovering the darker ribbed track on the opposite side. Toggling power
+  crossfades the two layers with a short horizontal nudge; the body, ON/OFF
+  labels, and recess never move.
+- The BATT pilot is a red LED, matching the hardware, not a green status light.
 - Link Cable port on the **right side**.
 
 ## Paper and print width
@@ -50,7 +61,7 @@ left margin:  60 dots
 right margin: 61 dots
 ```
 
-The paper exits the white slot and moves upward over the printer front. Its
+The paper exits the dark slot and moves upward over the printer front. Its
 bottom stays at the slot while the free top edge grows upward; new rows appear
 at the bottom. The output viewport auto-follows the newest row, and the tear tab
 is on the free top edge (scissors are always available).

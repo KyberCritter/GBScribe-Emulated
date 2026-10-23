@@ -176,7 +176,7 @@ The supplied hardware photos are used directly, with their backgrounds cut out:
 1. Front-on translucent crimson GBA with a white screen bezel, white D-pad,
    A/B, small Start/Select under the D-pad, top-right POWER LED, bottom-right
    speaker, and Link Cable port on the top edge.
-2. Front-on beige Game Boy Printer, smoked roll cover, black brand band, white
+2. Front-on beige Game Boy Printer, smoked roll cover, black brand band, dark
    paper slot, red FEED button, gray POWER switch, Nintendo oval, and a
    right-side Link Cable port.
 3. Printed paper close-up for the print-width ratio.
@@ -185,7 +185,7 @@ Implementation notes:
 
 - The printer sits on the **left**, the GBA on the **right**.
 - The GBA screen is the real 240×160 canvas, scaled with pixelated rendering.
-- The printer is the supplied photo; paper exits the **white slot** below the
+- The printer is the supplied photo; paper exits the **paper slot** below the
   roll cover and moves upward over the printer front, like a real print.
 - The paper strip is clipped in a scrollable window with auto-follow; its
   tear tab is at the free top edge (use the scissors when it scrolls out of view).

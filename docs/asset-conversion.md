@@ -6,12 +6,12 @@ emulator/paper into them.
 
 ## 1. Keep the originals out of git
 
-The uploads are copied into `.scratchwork/reference/` (gitignored):
+The uploads are copied into `.scratchwork/reference/issue5/` (gitignored):
 
 ```txt
-user-uIBWG9-0.jpg  front-on crimson GBA
-user-uIBWG9-1.jpg  front-on Game Boy Printer
-user-1PRHhr-0.jpg  printed paper close-up (print-width measurement)
+gba.jpg          front-on crimson GBA
+printer-on.jpg   Game Boy Printer with the switch ON (landscape source)
+printer-off.jpg  the same printer with the switch OFF
 ```
 
 The images are the project author's own photographs. The published cutouts are
@@ -23,10 +23,11 @@ in `assets/img/` with attribution in `assets/img/README.md`.
 [`rembg`](https://github.com/danielgatis/rembg):
 
 ```sh
-python -m pip install pillow rembg onnxruntime
+python -m pip install pillow numpy rembg onnxruntime
 python tools/prepare-assets.py \
-  --gba .scratchwork/reference/user-uIBWG9-0.jpg \
-  --printer .scratchwork/reference/user-uIBWG9-1.jpg
+  --gba .scratchwork/reference/issue5/gba.jpg \
+  --printer .scratchwork/reference/issue5/printer-on.jpg \
+  --printer-off .scratchwork/reference/issue5/printer-off.jpg
 ```
 
 The pipeline is:
@@ -37,32 +38,56 @@ The pipeline is:
 4. Resize to a web-friendly width (GBA 1200 px, printer 700 px).
 5. Write both `gba.png` / `printer.png` and lossy-alpha WebP versions.
 
-Why both formats? WebP is what the page loads; the PNG is the higher-quality
-source for other uses and for documentation.
+The resulting cutouts are 1200×691 (GBA) and 700×1356 (printer). Why both
+formats? WebP is what the page loads; the PNG is the higher-quality source for
+other uses and for documentation.
+
+The printer base comes from the **power-on** photo: its switch is the ON
+reference, and the body is the shell used in the page.
 
 ## 3. Rebuild the printer's empty slot
 
-The printer photo has a short printed paper leader hanging out of the slot. A
-live paper strip is overlaid there, so the leader would show through around the
-edges and in the empty state. The script:
+The printer photo has a printed paper leader hanging out of the slot. A live
+paper strip is overlaid there, so the leader would show through around the
+edges and in the empty state. The script clones a text-free slice of the dark
+slot interior from just above the leader (x 110–590, y 484–510 in the 700 px
+image) down over it (y 508–558). The ribbed platen bar below remains visible,
+and the live paper starts at the slot line.
 
-- samples a text-free slice of the black band,
-- pastes it over the short leader,
-- draws the pale slot lip, the dark opening, and the lower lip.
+The old pale lip and lower-lip drawing is no longer needed: this photo already
+has the dark opening and the ribbed bar.
 
-The live paper starts exactly at the dark opening. This makes the empty state
-look like an empty printer and lets the app's own paper supply the output.
+## 4. Layer the power switch
 
-## 4. Composite the GBA screen
+Only the power switch changes between ON and OFF; the printer body must not
+swap. The switch is the **whole rounded rectangular cap** around the circular
+bump, including the POWER label, not just the bump. The script therefore:
 
-The GBA photo is front-on enough that a flat composite works. In the 1200×708
+1. Cuts a soft-edged rounded rectangle around the ON cap at
+   (448, 1071)–(568, 1248).
+2. Paints the cap's socket out of the base shell with a quadratic panel fit,
+   so the body has no cap baked in.
+3. Mirrors the photographed left-hand ribbed track into the right side of the
+   recess, where the cap uncovers it in the OFF position.
+4. Cuts the OFF cap from the power-off photo at (429, 1071)–(548, 1249),
+   scales it to the ON cap's 120×177 size, and color-matches its surrounding
+   panel to the cleaned base. The OFF cap keeps its own left position.
+
+`src/ui/template.js` stacks the two 120×177 cap cutouts over the single
+base shell. `.gbs-printer-scene.is-powered` fades the ON cap in and the OFF cap
+out over 120 ms, with a short horizontal nudge, so the whole switch slides
+left for OFF and right for ON while the body and ON/OFF labels stay put.
+
+## 5. Composite the GBA screen
+
+The GBA photo is front-on enough that a flat composite works. In the 1200×691
 cutout the black screen occupies:
 
 ```txt
-left:   25.7%
-top:    17.5%
-width:  46.4%
-height: 54.0%
+left:   27.25%
+top:    18.52%
+width:  44.67%
+height: 51.95%
 ```
 
 `src/ui/template.js` places a `<canvas>` in a `.gbs-screen-mount` at those
@@ -71,27 +96,46 @@ and a glossy `::after` highlight. The 240×160 canvas is drawn at 96.8% of the
 mount so a thin black bezel remains. No perspective transform is needed for
 this photo.
 
-## 5. Place the controls
+## 6. Place the controls
 
 The photo buttons are not redrawn. Transparent buttons sit over them:
 
-| Control | Approx. position in the 1200×708 GBA photo |
+| Control | Position in the 1200×691 GBA cutout |
 | --- | --- |
-| D-pad | left 4.6%, top 31%, width 14.8%, height 24.5% |
-| A | left 89%, top 32%, width 7.5%, height 13.5% |
-| B | left 81.8%, top 34%, width 7.5%, height 13.5% |
-| Start | left 18%, top 60.5%, width 5.5%, height 7% |
-| Select | left 18%, top 67%, width 5.5%, height 7% |
-| L/R | top edge zones |
-| Link port | top edge, moved left as requested |
+| D-pad | left 6.75%, top 30.25%, width 12.42%, height 21.42% |
+| A | left 87%, top 32.3%, width 8%, height 13.8% |
+| B | left 77.9%, top 37.7%, width 8%, height 13.4% |
+| Start | left 16.72%, top 60.56%, width 5.4%, height 5.4% |
+| Select | left 16.55%, top 70.48%, width 5.4%, height 5.4% |
+| L/R | large rotated ovals over the shoulders: 26% x 20% at the top corners |
+| Power LED | centre 81.83%, 16.79%, width 2.7% |
+| Link port | synthetic connector at left 37.5%, top edge |
 
-The printer uses the same technique at the FEED, POWER, and roll-cover regions
-of its 700×1328 cutout. The paper stage starts at the dark slot opening.
+The Start and Select hit zones are larger than the photographed domes for
+touch. The top shoulder buttons run along the photo's cropped top edge, so L/R
+use large transparent oval zones (26% x 20%) covering the whole visible
+triggers; the physical link port is still a small drawn port.
 
-## 6. Measure the print width
+The printer uses the same technique on its 700×1356 cutout:
 
-The close-up shows the printed square at about 443 px on a paper strip about
-780 px wide, so the print is ~57% of the paper. The model uses:
+| Control | Position in the 700×1356 printer cutout |
+| --- | --- |
+| Roll cover | left 11%, top 1.3%, width 78%, height 33.5% |
+| FEED | centre 24.1%, 84.8%; hit zone 25.4% × 14% |
+| POWER panel | left 60.7%, top 78.7%, width 21.5%, height 13.1% |
+| Switch cap ON | left 64%, top 78.982%, 120×177 px layer |
+| Switch cap OFF | left 61.286%, top 78.982%, 120×177 px layer |
+| Status LED | centre 89.9%, 50.1%; width 4.6% (red) |
+| Link port | right edge, 61% down |
+| Paper stage | left 19%, top 1.5%, width 62%, height 42.5% |
+
+The cigarette-style paper strip grows upward from the slot line at the bottom
+of the paper stage.
+
+## 7. Measure the print width
+
+The earlier printed-paper close-up shows the printed square at about 443 px on a
+paper strip about 780 px wide, so the print is ~57% of the paper. The model uses:
 
 ```txt
 paper width: 281 dots
@@ -102,7 +146,7 @@ offset:       60 dots left, 61 dots right
 This is applied consistently in the display canvas, PNG/BMP renderer, and PDF
 image stream, so on-screen and exported paper match.
 
-## 7. Re-running
+## 8. Re-running
 
 `tools/prepare-assets.py` is idempotent and only depends on Pillow + rembg.
 The final assets are committed; the source photos are not. If you replace the

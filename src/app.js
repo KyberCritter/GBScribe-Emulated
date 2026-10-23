@@ -143,6 +143,7 @@ class GBScribeDemo {
     this.gba = null;
     this.romBuffer = null;
     this.loaded = false;
+    this.freshBoot = false;
     this.destroyed = false;
     this.demoRunning = false;
     this.listeningAction = null;
@@ -170,6 +171,12 @@ class GBScribeDemo {
       options.gbaImageUrl || new URL('../assets/img/gba.webp', import.meta.url).href;
     this.refs.printerImage.src =
       options.printerImageUrl || new URL('../assets/img/printer.webp', import.meta.url).href;
+    this.refs.switchOn.src =
+      options.printerSwitchOnUrl ||
+      new URL('../assets/img/printer-switch-on.webp', import.meta.url).href;
+    this.refs.switchOff.src =
+      options.printerSwitchOffUrl ||
+      new URL('../assets/img/printer-switch-off.webp', import.meta.url).href;
     this.bindings = { ...DEFAULT_BINDINGS };
     this.muted = false;
     this.sound = new SoundBoard({ muted: this.muted });
@@ -218,11 +225,9 @@ class GBScribeDemo {
       paperScroll: q('[data-paper-scroll]'),
       paperEmpty: q('[data-paper-empty]'),
       tearTab: q('[data-tear-tab]'),
-      statusbar: q('[data-statusbar]'),
-      status: q('[data-status]'),
-      statusLed: q('[data-status-led]'),
       pilot: q('[data-pilot]'),
-      linkPilot: q('[data-link-pilot]'),
+      switchOn: q('[data-switch-on]'),
+      switchOff: q('[data-switch-off]'),
       rollFill: q('[data-roll-fill]'),
       rollLabel: q('[data-roll-label]'),
       gbaPower: q('[data-gba-power]'),
@@ -350,6 +355,7 @@ class GBScribeDemo {
     this.gba = gba;
     this.romBuffer = rom;
     this.loaded = true;
+    this.freshBoot = true;
     this.refs.gbaPower?.classList.add('on');
     await sleep(650);
     this.refs.loading.classList.add('is-hidden');
@@ -702,6 +708,7 @@ class GBScribeDemo {
 
   pressButton(action, source) {
     if (!this.gba || !BUTTON_INDEX.hasOwnProperty(action)) return;
+    this.freshBoot = false;
     let sources = this.held.get(action);
     if (!sources) {
       sources = new Set();
@@ -939,7 +946,14 @@ class GBScribeDemo {
     if (this.printer.rollRows < 700) this.printer.replaceRoll();
     this.scheduleUI();
     this.bindGuideKeys();
-    await this.resetGba(false);
+    if (!this.freshBoot) {
+      try {
+        await this.resetGba(false);
+      } catch (error) {
+        // A failed reset should not leave the guide stuck on an empty step.
+        console.warn('Guide reset failed', error);
+      }
+    }
     await sleep(1200);
     if (!this.guideActive || run !== this.guideRunId) return;
     this.guideSteps = this.createGuideSteps();
@@ -1018,7 +1032,7 @@ class GBScribeDemo {
       {
         id: 'printing',
         title: 'Print the page',
-        body: 'GBScribe sends the page to the printer; paper feeds up out of the white slot.',
+        body: 'GBScribe sends the page to the printer; paper feeds up out of the slot.',
         targets: () => ['.gbs-hit-a'],
         advance: async (run) => {
           const baselineRows = this.paperStore.current.rowCount;
@@ -1636,32 +1650,10 @@ class GBScribeDemo {
     const paperOut = printer.rollRows <= 0;
     const coverOpen = !printer.coverClosed;
 
-    let status = 'Printer on';
-    let ledClass = '';
-    if (!powered) {
-      status = 'Printer off';
-      ledClass = 'off';
-    } else if (!coverOpen && paperOut) {
-      status = 'Out of paper — replace the roll';
-      ledClass = 'error';
-    } else if (coverOpen) {
-      status = 'Cover open';
-      ledClass = 'error';
-    } else if (printing) {
-      status = `Printing ${Math.round(printer.jobProgress * 100)}%`;
-      ledClass = 'busy';
-    } else if (feeding) {
-      status = 'Feeding paper';
-      ledClass = 'busy';
-    } else if (printer.rollRows <= printer.lowPaperRows) {
-      status = 'Paper low';
-    }
-    this.refs.status.textContent = status;
-    this.refs.statusLed.className = `gbs-status-led ${ledClass}`.trim();
     this.refs.rollFill.style.width = `${printer.paperPercent.toFixed(1)}%`;
     this.refs.rollLabel.textContent = `${Math.round(printer.paperPercent)}%`;
 
-    this.refs.pilot.className = 'gbs-pilot';
+    this.refs.pilot.className = 'gbs-printer-led';
     if (!powered) {
       // Pilot off.
     } else if (paperOut || coverOpen) {
@@ -1671,7 +1663,7 @@ class GBScribeDemo {
     } else {
       this.refs.pilot.classList.add('on');
     }
-    this.refs.linkPilot.className = `gbs-pilot ${powered ? 'on' : ''}`.trim();
+    this.refs.printerBody.classList.toggle('is-powered', powered);
 
     for (const button of this.refs.powerButtons) {
       button.classList.toggle('is-on', powered);
@@ -1739,7 +1731,7 @@ class GBScribeDemo {
       await this.tap('A');
       await sleep(520);
       await this.tap('A');
-      this.toast('Test print started. Watch the paper feed out of the white slot.', false, 4200);
+      this.toast('Test print started. Watch the paper feed out of the slot.', false, 4200);
     } catch (error) {
       console.error(error);
       this.toast('The guided demo could not run. Use the GBA buttons manually.', true);
@@ -1755,6 +1747,7 @@ class GBScribeDemo {
     this.gba.storeSavedata();
     this.gba.setRom(this.romBuffer);
     await this.gba.waitForFrames(90, 6000);
+    this.freshBoot = true;
     if (showToast) this.toast('GBA reset. GBScribe is back at the title screen.');
     await sleep(120);
   }

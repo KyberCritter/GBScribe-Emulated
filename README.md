@@ -43,12 +43,12 @@ status bit. Powering the printer off makes GBScribe report
 
 The shells are the supplied hardware photos, cut out for the browser: a
 front-on crimson GBA with a white bezel and white controls, and a front-on
-beige printer with a smoked paper-roll cover, black brand band, and white
-output slot. The printer is on the left, the GBA on the right. The Link Cable leaves
+beige printer with a smoked paper-roll cover, black brand band, and dark paper
+slot. The printer is on the left, the GBA on the right. The Link Cable leaves
 the **top** of the GBA and enters the **right side** of the printer. On narrow
 screens the devices stack and the cable runs off the edges of the demo, as if
 the connection continues out of view. Paper feeds
-out of the white slot and rises up over the printer, like the real thing. The
+out of the slot and rises up over the printer, like the real thing. The
 print image is centered on the paper at the ~57% width measured from a real
 Game Boy Camera print.
 
@@ -100,8 +100,11 @@ Game Boy Camera print.
 - 160-dot, four-shade thermal output with 18-tile-row buffer semantics.
 - Feed-before/feed-after margins and multi-copy prints.
 - Portrait printer based on the hardware photo: smoked roll cover, black brand
-  band, white paper slot, red FEED button, gray POWER switch.
-- **Slow, visible paper feed** from the white slot — one dot row at a time,
+  band, dark paper slot, red FEED button, gray POWER switch.
+- The POWER switch is the whole cap around its bump; it slides left for OFF
+  and right for ON on the photographed panel, with only the cap changing. The
+  BATT pilot is red like the hardware LED.
+- **Slow, visible paper feed** from the slot — one dot row at a time,
   rising up over the printer front.
 - Paper is 281 dots wide with the 160-dot print centered at ~57%, matching a
   real Game Boy Camera print.

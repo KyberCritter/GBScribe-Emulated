@@ -69,12 +69,13 @@ export function buildTemplate() {
     <section class="gbs-printer-column" aria-label="Game Boy Printer">
       <div class="gbs-printer-scene" data-printer-body>
         <img class="gbs-printer-image" data-printer-image alt="Game Boy Printer" draggable="false">
+        <img class="gbs-printer-switch gbs-printer-switch-on" data-switch-on alt="" aria-hidden="true" draggable="false">
+        <img class="gbs-printer-switch gbs-printer-switch-off" data-switch-off alt="" aria-hidden="true" draggable="false">
         <button class="gbs-hit gbs-hit-cover" data-action="paper" type="button" aria-label="Open the paper compartment" title="Open paper compartment"></button>
         <button class="gbs-hit gbs-hit-feed" data-action="feed" type="button" aria-label="Feed paper" title="Feed paper"></button>
         <button class="gbs-hit gbs-hit-power" data-action="power" type="button" aria-label="Turn printer power on or off" title="Power"></button>
         <span class="gbs-port gbs-port-printer" data-port-printer aria-hidden="true"></span>
         <span class="gbs-printer-led" data-pilot title="Printer status"></span>
-        <span class="gbs-printer-led gbs-printer-link-led" data-link-pilot title="Link cable"></span>
         <span hidden data-roll-label>100%</span>
         <span hidden class="gbs-roll-fill"><i data-roll-fill style="width:100%"></i></span>
 
@@ -92,11 +93,6 @@ export function buildTemplate() {
           </div>
         </div>
         <button class="gbs-scissors" data-action="tear" type="button" aria-label="Cut the paper off with scissors" disabled>${icons.scissors}</button>
-      </div>
-
-      <div class="gbs-statusbar" data-statusbar aria-live="polite">
-        <span class="gbs-status-led" data-status-led></span>
-        <span data-status>Printer on</span>
       </div>
     </section>
   </div>
